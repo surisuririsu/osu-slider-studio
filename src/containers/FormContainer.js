@@ -18,7 +18,7 @@ export default class FormContainer extends React.PureComponent {
   render() {
     return (
       <div id="form_container">
-        <h1>SliderCAD</h1>
+        <h1>SliderStudio</h1>
         <span>by <a href="https://osu.ppy.sh/u/2099102">Little</a></span>
 
         <form id="settings_section" className="formSection" onSubmit={this.handleSubmit}>
