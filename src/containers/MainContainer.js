@@ -14,15 +14,16 @@ export default class MainContainer extends React.PureComponent {
       },
       grid: 4,
       points: [
-        { x: 284, y: 28, anchor: true, type: null },
-        { x: 304, y: 59, anchor: false, type: null },
-        { x: 311, y: 95, anchor: false, type: 'perfect' },
-        { x: 256, y: 140, anchor: false, type: null },
-        { x: 376, y: 176, anchor: true, type: 'bezier' }
+        // { x: 284, y: 28, anchor: true, type: null },
+        // { x: 304, y: 59, anchor: false, type: null },
+        // { x: 311, y: 95, anchor: false, type: 'perfect' },
+        // { x: 256, y: 140, anchor: false, type: null },
+        // { x: 376, y: 176, anchor: true, type: 'bezier' }
       ],
     }
     this.handleChangeSettings = this._handleChangeSettings.bind(this)
     this.handleChangeGrid = this._handleChangeGrid.bind(this)
+    this.handleAddPoint = this._handleAddPoint.bind(this)
   }
 
   render() {
@@ -35,6 +36,7 @@ export default class MainContainer extends React.PureComponent {
         key="canvas_container"
         grid={this.state.grid}
         points={this.state.points}
+        onAddPoint={this.handleAddPoint}
       />
     ]
   }
@@ -45,5 +47,19 @@ export default class MainContainer extends React.PureComponent {
 
   _handleChangeGrid(grid) {
     this.setState({ grid })
+  }
+
+  _handleAddPoint(point, index) {
+    const newPoints = this.state.points.slice()
+    const i = index || newPoints.length
+    const lastPt = newPoints[newPoints.length - 1] || {}
+    const dx = Math.abs(point.x - lastPt.x)
+    const dy = Math.abs(point.y - lastPt.y)
+    if (dx < 4 && dy < 4) {
+      lastPt.anchor = true
+    } else {
+      newPoints.splice(i, 0, point)
+    }
+    this.setState({ points: newPoints })
   }
 }

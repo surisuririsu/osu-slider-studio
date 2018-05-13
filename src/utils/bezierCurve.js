@@ -99,21 +99,12 @@ function bezierCurvePoints(points) {
   return output
 }
 
-export default function bezierCurve(ctx, points) {
+export default function bezierCurve(ctx, points, width) {
   const output = bezierCurvePoints(points)
 
-  ctx.fillStyle = 'white'
   output.forEach(p => {
     ctx.beginPath()
-    ctx.arc(p.x, p.y, 34 * SCALE_FACTOR, 0, 2 * Math.PI, false)
-    ctx.fill()
-    ctx.closePath()
-  })
-
-  ctx.fillStyle = '#1da1f2'
-  output.forEach(p => {
-    ctx.beginPath()
-    ctx.arc(p.x, p.y, 30 * SCALE_FACTOR, 0, 2 * Math.PI, false)
+    ctx.arc(p.x, p.y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
     ctx.fill()
     ctx.closePath()
   })

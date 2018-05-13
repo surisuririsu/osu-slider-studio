@@ -84,7 +84,7 @@ function bezierSplinePoints(points) {
   return cpoints
 }
 
-export default function bezierSpline(ctx, points) {
+export default function bezierSpline(ctx, points, width) {
   const cpoints = bezierSplinePoints(points)
 
   ctx.beginPath()
@@ -100,11 +100,12 @@ export default function bezierSpline(ctx, points) {
     ctx.bezierCurveTo(cpp.cn.x, cpp.cn.y, cp.cp.x, cp.cp.y, p.x, p.y)
   }
 
-  ctx.lineWidth = 68 * SCALE_FACTOR
-  ctx.strokeStyle = 'white'
+  ctx.lineWidth = width * SCALE_FACTOR
   ctx.stroke()
+  ctx.closePath()
 
-  ctx.lineWidth = 60 * SCALE_FACTOR
-  ctx.strokeStyle = '#1da1f2'
-  ctx.stroke()
+  ctx.beginPath()
+  ctx.arc(points[0].x, points[0].y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
+  ctx.fill()
+  ctx.closePath()
 }
