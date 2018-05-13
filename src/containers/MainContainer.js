@@ -16,7 +16,7 @@ export default class MainContainer extends React.PureComponent {
       points: [
         { x: 284, y: 28, anchor: true, type: null },
         { x: 304, y: 59, anchor: false, type: null },
-        { x: 311, y: 95, anchor: true, type: 'perfect' },
+        { x: 311, y: 95, anchor: false, type: 'perfect' },
         { x: 256, y: 140, anchor: false, type: null },
         { x: 376, y: 176, anchor: true, type: 'bezier' }
       ],

@@ -1,5 +1,6 @@
 import React from 'react'
-import catmullCurve from '../utils/catmullCurve'
+import bezierSpline from '../utils/bezierSpline'
+import bezierCurve from '../utils/bezierCurve'
 
 const SCALE_FACTOR = 1.5
 
@@ -63,58 +64,48 @@ export default class CanvasContainer extends React.Component {
     canvas.height = container.clientHeight
   }
 
+  drawCircleBorder(ctx, pt) {
+    ctx.fillStyle = 'white'
+
+    ctx.beginPath()
+    ctx.arc(pt.x, pt.y, 34 * SCALE_FACTOR, 0, 2 * Math.PI, false)
+    ctx.fill()
+    ctx.closePath()
+  }
+
+  drawCircleFill(ctx, pt) {
+    ctx.fillStyle = '#1da1f2'
+
+    ctx.beginPath()
+    ctx.arc(pt.x, pt.y, 30 * SCALE_FACTOR, 0, 2 * Math.PI, false)
+    ctx.fill()
+    ctx.closePath()
+  }
+
   drawSlider() {
     const canvas = this.refs.canvas
     if (!canvas.getContext) return
     const ctx = canvas.getContext('2d')
 
     const points = this.props.points
+    const scaledPoints = points.map(pt => Object.assign({}, pt, {
+      x: pt.x * SCALE_FACTOR,
+      y: pt.y * SCALE_FACTOR
+    }))
 
     const truePoints = points;
 
-    ctx.lineWidth = 4 * SCALE_FACTOR
-    ctx.strokeStyle = 'white'
-    ctx.fillStyle = '#1da1f2'
+    const head = scaledPoints[0]
+    const tail = scaledPoints[scaledPoints.length - 1]
 
-    const head = truePoints[0]
-    ctx.beginPath()
-    ctx.arc(head.x * SCALE_FACTOR, head.y * SCALE_FACTOR, 32 * SCALE_FACTOR, 0, 2 * Math.PI, false)
-    ctx.fill()
-    ctx.stroke()
-    ctx.closePath()
+    this.drawCircleBorder(ctx, head)
+    this.drawCircleBorder(ctx, tail)
 
-    const tail = truePoints[truePoints.length - 1]
-    ctx.beginPath()
-    ctx.arc(tail.x * SCALE_FACTOR, tail.y * SCALE_FACTOR, 32 * SCALE_FACTOR, 0, 2 * Math.PI, false)
-    ctx.fill()
-    ctx.stroke()
-    ctx.closePath()
+    // bezierSpline(ctx, scaledPoints)
+    bezierCurve(ctx, scaledPoints)
 
-    ctx.lineWidth = 68 * SCALE_FACTOR
-    ctx.strokeStyle = 'white'
-
-    catmullCurve(ctx, points.map(pt => ([
-      pt.x * SCALE_FACTOR, pt.y * SCALE_FACTOR
-    ])))
-
-    ctx.lineWidth = 60 * SCALE_FACTOR
-    ctx.strokeStyle = '#1da1f2'
-
-    catmullCurve(ctx, points.map(pt => ([
-      pt.x * SCALE_FACTOR, pt.y * SCALE_FACTOR
-    ])))
-
-    ctx.lineWidth = 4 * SCALE_FACTOR
-
-    ctx.beginPath()
-    ctx.arc(head.x * SCALE_FACTOR, head.y * SCALE_FACTOR, 30 * SCALE_FACTOR, 0, 2 * Math.PI, false)
-    ctx.fill()
-    ctx.closePath()
-
-    ctx.beginPath()
-    ctx.arc(tail.x * SCALE_FACTOR, tail.y * SCALE_FACTOR, 30 * SCALE_FACTOR, 0, 2 * Math.PI, false)
-    ctx.fill()
-    ctx.closePath()
+    this.drawCircleFill(ctx, head)
+    this.drawCircleFill(ctx, tail)
 
     ctx.lineWidth = 1
     ctx.strokeStyle = 'gray'
