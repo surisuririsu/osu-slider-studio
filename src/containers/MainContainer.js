@@ -13,17 +13,8 @@ export default class MainContainer extends React.PureComponent {
         svMultiplier: 1
       },
       grid: 4,
-      points: [
-        // { x: 284, y: 28, anchor: true, type: null },
-        // { x: 304, y: 59, anchor: false, type: null },
-        // { x: 311, y: 95, anchor: false, type: 'perfect' },
-        // { x: 256, y: 140, anchor: false, type: null },
-        // { x: 376, y: 176, anchor: true, type: 'bezier' }
-      ],
+      points: []
     }
-    this.handleChangeSettings = this._handleChangeSettings.bind(this)
-    this.handleChangeGrid = this._handleChangeGrid.bind(this)
-    this.handleAddPoint = this._handleAddPoint.bind(this)
   }
 
   render() {
@@ -41,15 +32,15 @@ export default class MainContainer extends React.PureComponent {
     ]
   }
 
-  _handleChangeSettings(settings) {
+  handleChangeSettings = (settings) => {
     this.setState({ settings })
   }
 
-  _handleChangeGrid(grid) {
+  handleChangeGrid = (grid) => {
     this.setState({ grid })
   }
 
-  _handleAddPoint(point, index) {
+  handleAddPoint = (point, index) => {
     const newPoints = this.state.points.slice()
     const i = index || newPoints.length
     const lastPt = newPoints[newPoints.length - 1] || {}

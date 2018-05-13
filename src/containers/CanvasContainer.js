@@ -1,10 +1,21 @@
 import React from 'react'
-import bezierSpline from '../utils/bezierSpline'
-import bezierCurve from '../utils/bezierCurve'
-import circularCurve from '../utils/circularCurve'
-import lineSegment from '../utils/lineSegment'
+import {
+  ArcSegment,
+  BezierSegment,
+  Circle,
+  LinearSegment,
+  SplineSegment
+} from '../elements'
+import { SCALE_FACTOR } from '../utils/constants'
 
-const SCALE_FACTOR = 1.5
+const FORM_WIDTH = 260
+const CTRL_KEY = 17
+const LEFT_BUTTON = 0
+const RIGHT_BUTTON = 2
+const BORDER_SIZE = 68
+const FILL_SIZE = 60
+const BORDER_COLOR = 'white'
+const FILL_COLOR = '#1da1f2'
 
 export default class CanvasContainer extends React.Component {
   constructor(props) {
@@ -16,18 +27,13 @@ export default class CanvasContainer extends React.Component {
       pendingPoint: {},
       throughSegment: false
     }
-    this.handleMouseDown = this._handleMouseDown.bind(this)
-    this.handleMouseMove = this._handleMouseMove.bind(this)
-    this.handleMouseUp = this._handleMouseUp.bind(this)
   }
 
   componentDidMount() {
-    window.addEventListener('resize', () => {
-      this.setCanvasSize()
-      this.drawSlider()
-    }, false)
-    document.onkeydown = this.handleKeyDown.bind(this)
-    document.onkeyup = this.handleKeyUp.bind(this)
+    window.addEventListener('resize', this.handleResize, false)
+    document.onkeydown = this.handleKeyDown
+    document.onkeyup = this.handleKeyUp
+
     this.setCanvasSize()
     this.drawSlider()
   }
@@ -37,7 +43,7 @@ export default class CanvasContainer extends React.Component {
   }
 
   render() {
-    const gridSize = (this.props.grid || 0) * SCALE_FACTOR;
+    const gridSize = (this.props.grid || 0) * SCALE_FACTOR
     return (
       <div ref="container" id="canvas_container">
         <canvas
@@ -53,52 +59,49 @@ export default class CanvasContainer extends React.Component {
     )
   }
 
-  computeXY(e) {
-    const x = Math.floor((e.clientX - 260) / SCALE_FACTOR / this.props.grid) * this.props.grid
-    const y = Math.floor(e.clientY / SCALE_FACTOR / this.props.grid) * this.props.grid
-    return { x, y }
+  handleResize = () => {
+    this.setCanvasSize()
+    this.drawSlider()
   }
 
-  handleKeyDown(e) {
+  handleKeyDown = (e) => {
     e = e || window.event
-    if (e.keyCode === 17) {
+    if (e.keyCode === CTRL_KEY) {
       if (this.state.drawing) {
         this.setState({ throughSegment: true })
       }
     }
   }
 
-  handleKeyUp(e) {
+  handleKeyUp = (e) => {
     e = e || window.event
-    if (e.keyCode === 17) {
+    if (e.keyCode === CTRL_KEY) {
       if (this.state.drawing) {
         this.setState({ throughSegment: false })
       }
     }
   }
 
-  _handleMouseDown(e) {
+  handleMouseDown = (e) => {
     e.preventDefault()
-    if (e.button !== 0) return
+    if (e.button !== LEFT_BUTTON) return
     this.setState({ mouseDown: true })
   }
 
-  _handleMouseMove(e) {
+  handleMouseMove = (e) => {
     e.preventDefault()
     if (this.state.drawing) {
       const { x, y } = this.computeXY(e)
-      this.setState({
-        pendingPoint: { x, y }
-      })
+      this.setState({ pendingPoint: { x, y } })
     }
     if (!this.state.mouseDown) return
     if (!this.state.dragging) this.setState({ dragging: true })
   }
 
-  _handleMouseUp(e) {
+  handleMouseUp = (e) => {
     e.preventDefault()
     const { x, y } = this.computeXY(e)
-    if (e.button === 0) {
+    if (e.button === LEFT_BUTTON) {
       if (this.state.drawing) {
         this.placePoint(x, y)
       } else if (this.state.dragging) {
@@ -108,7 +111,7 @@ export default class CanvasContainer extends React.Component {
       } else {
         // If near a segment, select segment
       }
-    } else if (e.button === 2) {
+    } else if (e.button === RIGHT_BUTTON) {
       if (this.state.drawing) {
         this.placePoint(x, y)
         this.setState({ drawing: false })
@@ -118,6 +121,12 @@ export default class CanvasContainer extends React.Component {
       mouseDown: false,
       dragging: false
     })
+  }
+
+  computeXY(e) {
+    const x = Math.floor((e.clientX - FORM_WIDTH) / SCALE_FACTOR / this.props.grid) * this.props.grid
+    const y = Math.floor(e.clientY / SCALE_FACTOR / this.props.grid) * this.props.grid
+    return { x, y }
   }
 
   placePoint(x, y, anchor) {
@@ -143,24 +152,6 @@ export default class CanvasContainer extends React.Component {
     canvas.height = container.clientHeight
   }
 
-  drawCircleBorder(ctx, pt) {
-    ctx.fillStyle = 'white'
-
-    ctx.beginPath()
-    ctx.arc(pt.x, pt.y, 34 * SCALE_FACTOR, 0, 2 * Math.PI, false)
-    ctx.fill()
-    ctx.closePath()
-  }
-
-  drawCircleFill(ctx, pt) {
-    ctx.fillStyle = '#1da1f2'
-
-    ctx.beginPath()
-    ctx.arc(pt.x, pt.y, 30 * SCALE_FACTOR, 0, 2 * Math.PI, false)
-    ctx.fill()
-    ctx.closePath()
-  }
-
   segment(points) {
     const segments = []
     let j = 0
@@ -179,14 +170,41 @@ export default class CanvasContainer extends React.Component {
 
   drawSegment(ctx, segment, width) {
     const lastPt = segment[segment.length - 1]
+    let element = BezierSegment
     if (segment.length == 2) {
-      lineSegment(ctx, segment, width)
+      element = LinearSegment
     } else if (lastPt.type === 'arc') {
-      circularCurve(ctx, segment, width)
+      element = ArcSegment
     } else if (lastPt.type === 'spline') {
-      bezierSpline(ctx, segment, width)
-    } else {
-      bezierCurve(ctx, segment, width)
+      element = SplineSegment
+    }
+    element.draw(ctx, segment, width)
+  }
+
+  drawControlPoints(ctx, points) {
+    ctx.lineWidth = 1
+    ctx.strokeStyle = 'gray'
+
+    for (let i = 1; i < points.length; i++) {
+      const pt = points[i]
+      const lastPt = points[i - 1]
+
+      ctx.beginPath()
+      ctx.moveTo(lastPt.x, lastPt.y)
+      ctx.lineTo(pt.x, pt.y)
+      ctx.stroke()
+      ctx.closePath()
+    }
+
+    for (let i = 0; i < points.length; i++) {
+      const pt = points[i]
+      ctx.fillStyle = pt.anchor ? 'red' : BORDER_COLOR
+
+      ctx.beginPath()
+      ctx.rect(pt.x - 3, pt.y - 3, 6, 6)
+      ctx.fill()
+      ctx.stroke()
+      ctx.closePath()
     }
   }
 
@@ -195,7 +213,7 @@ export default class CanvasContainer extends React.Component {
     let points = this.props.points.slice()
     if (!canvas.getContext || points.length === 0 ) return
     const ctx = canvas.getContext('2d')
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     if (this.state.drawing) {
       points.push(this.state.pendingPoint)
@@ -209,9 +227,6 @@ export default class CanvasContainer extends React.Component {
     const head = scaledPoints[0]
     const tail = scaledPoints[scaledPoints.length - 1]
 
-    this.drawCircleBorder(ctx, head)
-    this.drawCircleBorder(ctx, tail)
-
     const segments = this.segment(scaledPoints)
     if (this.state.drawing) {
       const lastSegment = segments[segments.length - 1]
@@ -221,42 +236,18 @@ export default class CanvasContainer extends React.Component {
       }
     }
 
-    ctx.fillStyle = 'white'
-    ctx.strokeStyle = 'white'
-    segments.forEach(s => this.drawSegment(ctx, s, 68))
+    ctx.fillStyle = BORDER_COLOR
+    ctx.strokeStyle = BORDER_COLOR
+    segments.forEach(s => this.drawSegment(ctx, s, BORDER_SIZE))
+    Circle.draw(ctx, head, BORDER_SIZE)
+    Circle.draw(ctx, tail, BORDER_SIZE)
 
-    ctx.fillStyle = '#1da1f2'
-    ctx.strokeStyle = '#1da1f2'
-    segments.forEach(s => this.drawSegment(ctx, s, 60))
+    ctx.fillStyle = FILL_COLOR
+    ctx.strokeStyle = FILL_COLOR
+    segments.forEach(s => this.drawSegment(ctx, s, FILL_SIZE))
+    Circle.draw(ctx, head, FILL_SIZE)
+    Circle.draw(ctx, tail, FILL_SIZE)
 
-    // bezierSpline(ctx, scaledPoints)
-    // bezierCurve(ctx, scaledPoints)
-
-    this.drawCircleFill(ctx, head)
-    this.drawCircleFill(ctx, tail)
-
-    ctx.lineWidth = 1
-    ctx.strokeStyle = 'gray'
-    for (let i = 1; i < points.length; i++) {
-      const pt = points[i]
-      const lastPt = points[i - 1]
-
-      ctx.beginPath()
-      ctx.moveTo(lastPt.x * SCALE_FACTOR, lastPt.y * SCALE_FACTOR)
-      ctx.lineTo(pt.x * SCALE_FACTOR, pt.y * SCALE_FACTOR)
-      ctx.stroke()
-      ctx.closePath()
-    }
-
-    for (let i = 0; i < points.length; i++) {
-      const pt = points[i]
-      ctx.fillStyle = pt.anchor ? 'red' : 'white'
-
-      ctx.beginPath()
-      ctx.rect((pt.x - 2) * SCALE_FACTOR, (pt.y - 2) * SCALE_FACTOR, 4 * SCALE_FACTOR, 4 * SCALE_FACTOR)
-      ctx.fill()
-      ctx.stroke()
-      ctx.closePath()
-    }
+    this.drawControlPoints(ctx, scaledPoints)
   }
 }

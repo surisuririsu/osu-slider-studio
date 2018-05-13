@@ -23,9 +23,10 @@ THE SOFTWARE.
 // Source: https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/Objects/BezierApproximator.cs
 // Ported and modified May 12, 2018 by robertlai
 
-const SCALE_FACTOR = 1.5
-const tolerance = 0.25
-const toleranceSq = Math.pow(tolerance, 2)
+import { SCALE_FACTOR } from '../utils/constants'
+
+const TOLERANCE = 0.25
+const TOLERANCE_SQ = Math.pow(TOLERANCE, 2)
 
 function isFlatEnough(points) {
   for (let i = 1; i < points.length - 1; i++) {
@@ -34,7 +35,7 @@ function isFlatEnough(points) {
     const np = points[i + 1]
     const x = pp.x - 2 * p.x + np.x
     const y = pp.y - 2 * p.y + np.y
-    if (Math.pow(x, 2) + Math.pow(y, 2) > toleranceSq * 4) return false
+    if (Math.pow(x, 2) + Math.pow(y, 2) > TOLERANCE_SQ * 4) return false
   }
   return true
 }
@@ -70,20 +71,20 @@ function approximate(points, output) {
     const pp = left[index - 1]
     const np = left[index + 1]
 
-    const xp = 0.25 * (pp.x + 2 * p.x + np.x);
-    const yp = 0.25 * (pp.y + 2 * p.y + np.y);
+    const xp = 0.25 * (pp.x + 2 * p.x + np.x)
+    const yp = 0.25 * (pp.y + 2 * p.y + np.y)
     output.push({ x: xp, y: yp })
   }
 }
 
-function bezierCurvePoints(points) {
+function getPoints(points) {
   const toFlatten = [points.slice()]
   const output = []
   while (toFlatten.length > 0) {
     parent = toFlatten.pop()
     if (isFlatEnough(parent)) {
       approximate(parent, output)
-      continue;
+      continue
     }
 
     const rChild = []
@@ -99,13 +100,15 @@ function bezierCurvePoints(points) {
   return output
 }
 
-export default function bezierCurve(ctx, points, width) {
-  const output = bezierCurvePoints(points)
+export default class BezierSegment {
+  static draw(ctx, points, width) {
+    const output = getPoints(points)
 
-  output.forEach(p => {
-    ctx.beginPath()
-    ctx.arc(p.x, p.y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
-    ctx.fill()
-    ctx.closePath()
-  })
+    output.forEach(p => {
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
+      ctx.fill()
+      ctx.closePath()
+    })
+  }
 }

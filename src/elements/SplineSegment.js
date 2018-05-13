@@ -13,9 +13,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 // Source: https://github.com/dobarkod/canvas-bezier-multiple/blob/master/src/canvas-bezier-multipoint.js
 // Copied and modified May 12, 2018 by robertlai
 
-const SCALE_FACTOR = 1.5
+import { SCALE_FACTOR } from '../utils/constants'
 
-function bezierSplinePoints(points) {
+function getControlPoints(points) {
   const tension = 0.25
   const count = points.length
 
@@ -84,28 +84,30 @@ function bezierSplinePoints(points) {
   return cpoints
 }
 
-export default function bezierSpline(ctx, points, width) {
-  const cpoints = bezierSplinePoints(points)
+export default class SplineSegment {
+  static draw(ctx, points, width) {
+    const cpoints = getControlPoints(points)
 
-  ctx.beginPath()
-  ctx.moveTo(points[0].x, points[0].y)
+    ctx.beginPath()
+    ctx.moveTo(points[0].x, points[0].y)
 
-  for (let i = 1; i < points.length; i++) {
-    const p = points[i]
-    const cp = cpoints[i]
-    const cpp = cpoints[i - 1]
+    for (let i = 1; i < points.length; i++) {
+      const p = points[i]
+      const cp = cpoints[i]
+      const cpp = cpoints[i - 1]
 
-    // Each bezier curve uses the "next control point" of first point
-    // point, and "previous control point" of second point.
-    ctx.bezierCurveTo(cpp.cn.x, cpp.cn.y, cp.cp.x, cp.cp.y, p.x, p.y)
+      // Each bezier curve uses the "next control point" of first point
+      // point, and "previous control point" of second point.
+      ctx.bezierCurveTo(cpp.cn.x, cpp.cn.y, cp.cp.x, cp.cp.y, p.x, p.y)
+    }
+
+    ctx.lineWidth = width * SCALE_FACTOR
+    ctx.stroke()
+    ctx.closePath()
+
+    ctx.beginPath()
+    ctx.arc(points[0].x, points[0].y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
+    ctx.fill()
+    ctx.closePath()
   }
-
-  ctx.lineWidth = width * SCALE_FACTOR
-  ctx.stroke()
-  ctx.closePath()
-
-  ctx.beginPath()
-  ctx.arc(points[0].x, points[0].y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
-  ctx.fill()
-  ctx.closePath()
 }

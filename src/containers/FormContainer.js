@@ -9,10 +9,6 @@ export default class FormContainer extends React.PureComponent {
       baseSv: 1,
       svMultiplier: 1
     }
-    this.handleChangeTempo = this._handleChangeTempo.bind(this)
-    this.handleChangeBaseSv = this._handleChangeBaseSv.bind(this)
-    this.handleChangeSvMultiplier = this._handleChangeSvMultiplier.bind(this)
-    this.handleSubmit = this._handleSubmit.bind(this)
   }
 
   render() {
@@ -39,19 +35,19 @@ export default class FormContainer extends React.PureComponent {
     )
   }
 
-  _handleChangeTempo(e) {
+  handleChangeTempo = (e) => {
     this.setState({ tempo: e.target.value })
   }
 
-  _handleChangeBaseSv(e) {
+  handleChangeBaseSv = (e) => {
     this.setState({ baseSv: e.target.value })
   }
 
-  _handleChangeSvMultiplier(e) {
+  handleChangeSvMultiplier = (e) => {
     this.setState({ svMultiplier: e.target.value })
   }
 
-  _handleSubmit(e) {
+  handleSubmit = (e) => {
     e.preventDefault()
 
     const tempo = parseFloat(this.state.tempo)
