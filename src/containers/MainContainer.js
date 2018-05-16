@@ -43,28 +43,37 @@ export default class MainContainer extends React.PureComponent {
   }
 
   handleAddPoint = (point, index) => {
-    const newPoints = this.state.points.slice()
-    const i = index || newPoints.length
-    const lastPt = newPoints[newPoints.length - 1] || {}
-    const dx = Math.abs(point.x - lastPt.x)
-    const dy = Math.abs(point.y - lastPt.y)
-    if (dx < 4 && dy < 4) {
-      lastPt.anchor = true
-    } else {
-      newPoints.splice(i, 0, point)
-    }
-    this.setState({ points: newPoints })
+    this.setState((currentState) => {
+      const points = currentState.points
+      const i = index || points.length
+      const lastPt = points[i - 1] || {}
+      const dx = Math.abs(point.x - lastPt.x)
+      const dy = Math.abs(point.y - lastPt.y)
+      if (dx < 4 && dy < 4) {
+        lastPt.anchor = true
+      } else {
+        points.splice(i, 0, point)
+      }
+      return currentState
+    })
   }
 
   handleChangePoint = (point, index) => {
-    const newPoints = this.state.points.slice()
-    newPoints[index] = point
-    this.setState({ points: newPoints })
+    this.setState((currentState) => {
+      currentState.points[index] = point
+      return currentState
+    })
   }
 
   handleDeletePoint = (index) => {
-    const newPoints = this.state.points.slice()
-    newPoints.splice(index, 1)
-    this.setState({ points: newPoints })
+    this.setState((currentState) => {
+      const point = currentState.points[index]
+      if (point.anchor) {
+        point.anchor = false
+      } else {
+        currentState.points.splice(index, 1)
+      }
+      return currentState
+    })
   }
 }
