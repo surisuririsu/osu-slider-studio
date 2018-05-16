@@ -7,6 +7,7 @@ import {
   SplineSegment
 } from '../elements'
 import { SCALE_FACTOR } from '../utils/constants'
+import { makeSegments } from '../utils/helpers'
 
 const FORM_WIDTH = 260
 const CTRL_KEY = 17
@@ -132,8 +133,8 @@ export default class CanvasContainer extends React.Component {
   placePoint(x, y, anchor) {
     console.log(`Point: (${x}, ${y})`)
     let type = null
-    if (this.state.throughSegment) {
-      const segments = this.segment(this.props.points)
+    const segments = makeSegments(this.props.points)
+    if (this.state.throughSegment && segments.length) {
       const lastSegment = segments[segments.length - 1]
       if (lastSegment.length === 2) {
         type = 'arc'
@@ -150,22 +151,6 @@ export default class CanvasContainer extends React.Component {
     const container = this.refs.container
     canvas.width = container.clientWidth
     canvas.height = container.clientHeight
-  }
-
-  segment(points) {
-    const segments = []
-    let j = 0
-    while (true) {
-      if (j >= points.length - 1) break
-      const seg = [points[j++]]
-      while (points[j]) {
-        seg.push(points[j])
-        if (points[j].anchor) break
-        j++
-      }
-      segments.push(seg)
-    }
-    return segments
   }
 
   drawSegment(ctx, segment, width) {
@@ -227,7 +212,7 @@ export default class CanvasContainer extends React.Component {
     const head = scaledPoints[0]
     const tail = scaledPoints[scaledPoints.length - 1]
 
-    const segments = this.segment(scaledPoints)
+    const segments = makeSegments(scaledPoints)
     if (this.state.drawing) {
       const lastSegment = segments[segments.length - 1]
       if (this.state.throughSegment) {
