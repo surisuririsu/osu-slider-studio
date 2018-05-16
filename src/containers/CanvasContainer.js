@@ -125,8 +125,8 @@ export default class CanvasContainer extends React.Component {
   }
 
   computeXY(e) {
-    const x = Math.floor((e.clientX - FORM_WIDTH) / SCALE_FACTOR / this.props.grid) * this.props.grid
-    const y = Math.floor(e.clientY / SCALE_FACTOR / this.props.grid) * this.props.grid
+    const x = Math.round((e.clientX - FORM_WIDTH) / SCALE_FACTOR / this.props.grid) * this.props.grid
+    const y = Math.round(e.clientY / SCALE_FACTOR / this.props.grid) * this.props.grid
     return { x, y }
   }
 

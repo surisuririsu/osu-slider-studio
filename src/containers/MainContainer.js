@@ -28,6 +28,8 @@ export default class MainContainer extends React.PureComponent {
         grid={this.state.grid}
         points={this.state.points}
         onAddPoint={this.handleAddPoint}
+        onChangePoint={this.handleChangePoint}
+        onDeletePoint={this.handleDeletePoint}
       />
     ]
   }
@@ -51,6 +53,18 @@ export default class MainContainer extends React.PureComponent {
     } else {
       newPoints.splice(i, 0, point)
     }
+    this.setState({ points: newPoints })
+  }
+
+  handleChangePoint = (point, index) => {
+    const newPoints = this.state.points.slice()
+    newPoints[index] = point
+    this.setState({ points: newPoints })
+  }
+
+  handleDeletePoint = (index) => {
+    const newPoints = this.state.points.slice()
+    newPoints.splice(index, 1)
     this.setState({ points: newPoints })
   }
 }
