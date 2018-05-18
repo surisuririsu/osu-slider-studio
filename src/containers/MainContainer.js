@@ -1,6 +1,7 @@
 import React from 'react'
 import FormContainer from './FormContainer'
 import CanvasContainer from './CanvasContainer'
+import NewCanvasContainer from './NewCanvasContainer'
 import '../styles/style.scss'
 
 export default class MainContainer extends React.PureComponent {
@@ -12,10 +13,19 @@ export default class MainContainer extends React.PureComponent {
         baseSv: 1,
         svMultiplier: 1
       },
-      grid: 4,
+      gridSize: 4,
       points: []
     }
   }
+
+      //   <CanvasContainer
+      //   key="canvas_container"
+      //   grid={this.state.grid}
+      //   points={this.state.points}
+      //   onAddPoint={this.handleAddPoint}
+      //   onChangePoint={this.handleChangePoint}
+      //   onDeletePoint={this.handleDeletePoint}
+      // />,
 
   render() {
     return [
@@ -23,9 +33,9 @@ export default class MainContainer extends React.PureComponent {
         key="form_container"
         onChangeSettings={this.handleChangeSettings}
       />,
-      <CanvasContainer
+      <NewCanvasContainer
         key="canvas_container"
-        grid={this.state.grid}
+        gridSize={this.state.gridSize}
         points={this.state.points}
         onAddPoint={this.handleAddPoint}
         onChangePoint={this.handleChangePoint}

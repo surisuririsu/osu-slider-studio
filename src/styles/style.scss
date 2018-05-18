@@ -59,7 +59,7 @@ a {
 #canvas_container {
   flex-grow: 1;
 
-  #grid_container {
+  canvas {
     height: calc(100% - 4px);
     width: 100%;
     margin: 0;
