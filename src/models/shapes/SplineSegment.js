@@ -13,7 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 // Source: https://github.com/dobarkod/canvas-bezier-multiple/blob/master/src/canvas-bezier-multipoint.js
 // Copied and modified May 12, 2018 by robertlai
 
-import { SCALE_FACTOR } from '../utils/constants'
+import { SCALE_FACTOR } from '../../utils/constants'
 
 function getControlPoints(points) {
   const tension = 0.25

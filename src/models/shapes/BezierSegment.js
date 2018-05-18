@@ -23,7 +23,7 @@ THE SOFTWARE.
 // Source: https://github.com/ppy/osu/blob/master/osu.Game/Rulesets/Objects/BezierApproximator.cs
 // Ported and modified May 12, 2018 by robertlai
 
-import { SCALE_FACTOR } from '../utils/constants'
+import { SCALE_FACTOR } from '../../utils/constants'
 
 const TOLERANCE = 0.25
 const TOLERANCE_SQ = Math.pow(TOLERANCE, 2)

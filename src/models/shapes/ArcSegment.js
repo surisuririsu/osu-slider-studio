@@ -1,4 +1,4 @@
-import { SCALE_FACTOR } from '../utils/constants'
+import { SCALE_FACTOR } from '../../utils/constants'
 
 function getCenter(m, n, o) {
   const a = n.x - m.x

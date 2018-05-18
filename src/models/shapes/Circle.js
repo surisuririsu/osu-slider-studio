@@ -1,4 +1,4 @@
-import { SCALE_FACTOR } from '../utils/constants'
+import { SCALE_FACTOR } from '../../utils/constants'
 
 export default class Circle {
   static draw(ctx, point, width) {
