@@ -12,8 +12,7 @@ export default class MainContainer extends React.PureComponent {
         baseSv: 1,
         svMultiplier: 1
       },
-      grid: 4,
-      points: []
+      gridSize: 4
     }
   }
 
@@ -25,9 +24,7 @@ export default class MainContainer extends React.PureComponent {
       />,
       <CanvasContainer
         key="canvas_container"
-        grid={this.state.grid}
-        points={this.state.points}
-        onAddPoint={this.handleAddPoint}
+        gridSize={this.state.gridSize}
       />
     ]
   }
@@ -36,21 +33,7 @@ export default class MainContainer extends React.PureComponent {
     this.setState({ settings })
   }
 
-  handleChangeGrid = (grid) => {
-    this.setState({ grid })
-  }
-
-  handleAddPoint = (point, index) => {
-    const newPoints = this.state.points.slice()
-    const i = index || newPoints.length
-    const lastPt = newPoints[newPoints.length - 1] || {}
-    const dx = Math.abs(point.x - lastPt.x)
-    const dy = Math.abs(point.y - lastPt.y)
-    if (dx < 4 && dy < 4) {
-      lastPt.anchor = true
-    } else {
-      newPoints.splice(i, 0, point)
-    }
-    this.setState({ points: newPoints })
+  handleChangeGridSize = (gridSize) => {
+    this.setState({ gridSize })
   }
 }

@@ -1,4 +1,4 @@
-import { SCALE_FACTOR } from '../utils/constants'
+import { SCALE_FACTOR } from '../../utils/constants'
 
 function getCenter(m, n, o) {
   const a = n.x - m.x
@@ -24,8 +24,8 @@ export default class ArcSegment {
     let center = getCenter(points[0], points[1], points[2])
     if (!center) {
       center = {
-        x: Math.floor((points[0].x + points[1].x) / 2),
-        y: Math.floor((points[0].y + points[1].y) / 2)
+        x: Math.round((points[0].x + points[1].x) / 2),
+        y: Math.round((points[0].y + points[1].y) / 2)
       }
     }
     const radius = Math.sqrt(Math.pow(center.x - points[0].x, 2) + Math.pow(center.y - points[0].y, 2))
