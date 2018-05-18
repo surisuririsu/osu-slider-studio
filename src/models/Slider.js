@@ -35,6 +35,32 @@ class Segment {
   points = []
   type = 'bezier'
 
+  static split(segment, index) {
+    const segment1 = new Segment()
+    segment1.points = segment.points.slice(0, index + 1)
+    segment1.type = segment.type
+    segment1.recomputeType()
+
+    const segment2 = new Segment()
+    segment2.points = segment.points.slice(index)
+    segment2.type = segment.type
+    segment2.recomputeType()
+
+    return [ segment1, segment2 ]
+  }
+
+  static join(segment1, segment2) {
+    const segment = new Segment()
+    segment.points = segment1.points.concat(segment2.points.slice(1))
+    segment.recomputeType()
+    return segment
+  }
+
+  isSecondLastPoint(point) {
+    const secondLast = this.points[this.points.length - 2]
+    return secondLast.x === point.x && secondLast.y === point.y
+  }
+
   getLength() {
     return this.points.length
   }
@@ -76,10 +102,12 @@ class Segment {
 
   pushPoint(point) {
     this.points.push(point)
+    this.recomputeType()
   }
 
   popPoint() {
     this.points.pop()
+    this.recomputeType()
   }
 
   insertPoint(point, index) {
@@ -98,23 +126,31 @@ class Segment {
 
   recomputeType() {
     const length = this.getLength()
+    const type = this.getType()
     if (length < 2) {
       this.setType('bezier')
     } else if (length === 2) {
       this.setType('linear')
-    } else if (this.getType() === 'arc' && length !== 3) {
+    } else if (type === 'linear' && length > 2) {
+      this.setType('bezier')
+    } else if (type === 'arc' && length > 3) {
       this.setType('bezier')
     }
   }
 
-  drawControlPoints(ctx, points) {
+  drawControlPoints(ctx) {
+    if (!this.getLength()) return
+    const scaledPoints = this.points.map((point) => ({
+      x: point.x * SCALE_FACTOR,
+      y: point.y * SCALE_FACTOR
+    }))
+
     ctx.lineWidth = 1
     ctx.strokeStyle = 'gray'
-    ctx.fillStyle = BORDER_COLOR
 
-    points.forEach((point, index) => {
+    scaledPoints.forEach((point, index) => {
       if (index === 0) return
-      const prevPoint = points[index - 1]
+      const prevPoint = scaledPoints[index - 1]
       ctx.beginPath()
       ctx.moveTo(prevPoint.x, prevPoint.y)
       ctx.lineTo(point.x, point.y)
@@ -122,7 +158,8 @@ class Segment {
       ctx.closePath()
     })
 
-    points.forEach((point) => {
+    scaledPoints.forEach((point, index) => {
+      ctx.fillStyle = index ? BORDER_COLOR : 'red'
       ctx.beginPath()
       ctx.rect(point.x - 3, point.y - 3, 6, 6)
       ctx.fill()
@@ -141,7 +178,6 @@ class Segment {
     type.draw(ctx, scaledPoints, width)
     Circle.draw(ctx, scaledPoints[0], width)
     Circle.draw(ctx, scaledPoints[scaledPoints.length - 1], width)
-    this.drawControlPoints(ctx, scaledPoints)
   }
 }
 
@@ -163,6 +199,13 @@ export default class Slider {
 
   getLastSegment() {
     return this.segments[this.segments.length - 1]
+  }
+
+  getLastPoint() {
+    return {
+      segIndex: this.getLength() - 1,
+      ptIndex: this.getLastSegment().getLength() - 1
+    }
   }
 
   setLastSegmentThrough(through) {
@@ -219,7 +262,53 @@ export default class Slider {
   }
 
   movePoint(segIndex, ptIndex, point) {
-    this.segments[segIndex].movePoint(ptIndex, point)
+    if (this.isAnchor(segIndex, ptIndex)) {
+      const anchorPair = this.getAnchorPair(segIndex, ptIndex)
+      anchorPair.forEach((anchor) => {
+        this.segments[anchor.segIndex].movePoint(anchor.ptIndex, point)
+      })
+    } else {
+      this.segments[segIndex].movePoint(ptIndex, point)
+    }
+  }
+
+  isAnchor(segIndex, ptIndex) {
+    const segment = this.segments[segIndex]
+    return (
+      ptIndex === 0 && segIndex !== 0 ||
+      ptIndex === segment.getLength() - 1 && segIndex !== this.getLength() - 1
+    )
+  }
+
+  getAnchorPair(segIndex, ptIndex) {
+    const segment = this.segments[segIndex]
+    const pair = [{ segIndex, ptIndex }]
+    if (ptIndex === 0 && segIndex !== 0) {
+      pair.unshift({
+        segIndex: segIndex - 1,
+        ptIndex: this.segments[segIndex - 1].getLength() - 1
+      })
+    } else if (ptIndex === segment.getLength() - 1 && segIndex !== this.getLength() - 1) {
+      pair.push({
+        segIndex: segIndex + 1,
+        ptIndex: 0
+      })
+    }
+    return pair
+  }
+
+  setAnchor(segIndex, ptIndex) {
+    const newSegments = Segment.split(this.segments[segIndex], ptIndex)
+    this.segments.splice(segIndex, 1, ...newSegments)
+  }
+
+  resetAnchor(segIndex, ptIndex) {
+    const anchorPair = this.getAnchorPair(segIndex, ptIndex)
+    const segment = Segment.join(
+      this.segments[anchorPair[0].segIndex],
+      this.segments[anchorPair[1].segIndex]
+    )
+    this.segments.splice(anchorPair[0].segIndex, 2, segment)
   }
 
   draw(ctx) {
@@ -230,5 +319,7 @@ export default class Slider {
     ctx.fillStyle = FILL_COLOR
     ctx.strokeStyle = FILL_COLOR
     this.segments.forEach(segment => segment.draw(ctx, FILL_SIZE))
+
+    this.segments.forEach(segment => segment.drawControlPoints(ctx))
   }
 }

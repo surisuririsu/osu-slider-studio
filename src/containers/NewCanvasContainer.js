@@ -75,8 +75,12 @@ export default class CanvasContainer extends React.Component {
   handleMouseMove = (e) => {
     const mousePoint = this.computePtFromEvent(e)
     if (this.state.drawing) {
-      this.slider.popPoint()
-      this.slider.pushPoint(mousePoint)
+      if (this.slider.isEmpty()) {
+        this.slider.pushPoint(mousePoint)
+      } else {
+        const { segIndex, ptIndex } = this.slider.getLastPoint()
+        this.slider.movePoint(segIndex, ptIndex, mousePoint)
+      }
     } else if (this.state.focusPoint) {
       const { segIndex, ptIndex } = this.state.focusPoint
       this.slider.movePoint(segIndex, ptIndex, mousePoint)
@@ -90,12 +94,17 @@ export default class CanvasContainer extends React.Component {
     const nearEdge = this.slider.getNearEdge(mousePoint)
     if (e.button === LEFT_BUTTON) {
       if (this.state.drawing) {
-        this.slider.pushPoint(mousePoint)
-      } else if (e.ctrlKey && !this.state.focusPoint) {
+        const lastSegment = this.slider.getLastSegment()
+        if (lastSegment.getLength() > 1 && lastSegment.isSecondLastPoint(mousePoint)) {
+          this.slider.setAnchor(this.slider.getLength() - 1, lastSegment.getLength() - 2)
+        } else {
+          this.slider.pushPoint(mousePoint)
+        }
+      } else if (e.ctrlKey) {
         if (nearPoint.segIndex !== null) {
-          // this.makeAnchor(nearPtIndex)
+          const { segIndex, ptIndex } = nearPoint
+          this.slider.setAnchor(segIndex, ptIndex)
         } else if (nearEdge.segIndex !== null) {
-          console.log(nearEdge)
           const { segIndex, edgeIndex } = nearEdge
           this.slider.insertPoint(mousePoint, segIndex, edgeIndex)
         }
@@ -105,7 +114,11 @@ export default class CanvasContainer extends React.Component {
         this.setState({ drawing: false })
       } else if (nearPoint.segIndex !== null) {
         const { segIndex, ptIndex } = nearPoint
-        this.slider.deletePoint(segIndex, ptIndex)
+        if (this.slider.isAnchor(segIndex, ptIndex)) {
+          this.slider.resetAnchor(segIndex, ptIndex)
+        } else {
+          this.slider.deletePoint(segIndex, ptIndex)
+        }
         if (this.slider.isEmpty()) {
           this.setState({ drawing: true })
         }
