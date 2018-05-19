@@ -137,6 +137,10 @@ export default class CanvasContainer extends React.Component {
     e.preventDefault()
   }
 
+  getSlider() {
+    return this.slider
+  }
+
   computePtFromEvent(e) {
     const gridSize = this.props.gridSize
     const x = Math.round((e.clientX - FORM_WIDTH) / SCALE_FACTOR / gridSize) * gridSize

@@ -1,5 +1,6 @@
 import React from 'react'
 import FloatInput from '../components/FloatInput'
+import CodeArea from '../components/CodeArea'
 
 export default class FormContainer extends React.PureComponent {
   constructor(props) {
@@ -29,7 +30,8 @@ export default class FormContainer extends React.PureComponent {
         </div>
 
         <div id="code_section" className="formSection">
-
+          <CodeArea label="Code" value={this.props.code} />
+          <button onClick={this.handleCodeClick}>Generate code</button>
         </div>
       </div>
     )
@@ -45,6 +47,10 @@ export default class FormContainer extends React.PureComponent {
 
   handleChangeSvMultiplier = (e) => {
     this.setState({ svMultiplier: e.target.value })
+  }
+
+  handleCodeClick = (e) => {
+    this.props.onGenerateCode()
   }
 
   handleSubmit = (e) => {

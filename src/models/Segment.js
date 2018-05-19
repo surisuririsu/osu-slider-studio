@@ -163,4 +163,8 @@ export default class Segment {
     Circle.draw(ctx, scaledPoints[0], width)
     Circle.draw(ctx, scaledPoints[scaledPoints.length - 1], width)
   }
+
+  getBezierPoints() {
+    return SEGMENT_TYPES[this.type].getBezierApproximation(this.points)
+  }
 }

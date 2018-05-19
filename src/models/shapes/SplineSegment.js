@@ -110,4 +110,8 @@ export default class SplineSegment {
     ctx.fill()
     ctx.closePath()
   }
+
+  static getBezierApproximation(points) {
+    return points
+  }
 }

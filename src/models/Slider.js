@@ -146,4 +146,35 @@ export default class Slider {
 
     this.segments.forEach(segment => segment.drawControlPoints(ctx))
   }
+
+  getAvgPoint() {
+    const pointSums = this.segments.reduce((acc, curr) => {
+      acc.totalX += curr.points.reduce((a, c) => (a + c.x), 0)
+      acc.totalY += curr.points.reduce((a, c) => (a + c.y), 0)
+      acc.count += curr.getLength()
+      return acc
+    }, { totalX: 0, totalY: 0, count: 0 })
+    return {
+      x: Math.round(pointSums.totalX / pointSums.count),
+      y: Math.round(pointSums.totalY / pointSums.count)
+    }
+  }
+
+  getOsuCode() {
+    const avgPoint = this.getAvgPoint()
+    const dX = 256 - avgPoint.x
+    const dY = 192 - avgPoint.y
+
+    const allPoints = this.segments.reduce((acc, curr) => (
+      acc.concat(curr.getBezierPoints().map(p => ({ x: p.x + dX, y: p.y + dY })))
+    ), [])
+
+    let codeLine = ''
+    codeLine += `${allPoints[0].x},${allPoints[0].y}`
+    codeLine += ',0,2,0,B|'
+    codeLine += allPoints.slice(1).map(p => `${p.x}:${p.y}`).join('|')
+    codeLine += ',1,500'
+
+    return codeLine
+  }
 }

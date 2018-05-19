@@ -55,4 +55,8 @@ export default class ArcSegment {
     ctx.fill()
     ctx.closePath()
   }
+
+  static getBezierApproximation(points) {
+    return points
+  }
 }
