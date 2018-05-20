@@ -12,7 +12,8 @@ export default class MainContainer extends React.PureComponent {
         baseSv: 1,
         svMultiplier: 1
       },
-      gridSize: 4
+      gridSize: 4,
+      sliderCode: ''
     }
   }
 
@@ -20,10 +21,13 @@ export default class MainContainer extends React.PureComponent {
     return [
       <FormContainer
         key="form_container"
+        code={this.state.sliderCode}
         onChangeSettings={this.handleChangeSettings}
+        onGenerateCode={this.handleGenerateCode}
       />,
       <CanvasContainer
         key="canvas_container"
+        ref="canvasContainer"
         gridSize={this.state.gridSize}
       />
     ]
@@ -35,5 +39,13 @@ export default class MainContainer extends React.PureComponent {
 
   handleChangeGridSize = (gridSize) => {
     this.setState({ gridSize })
+  }
+
+  handleGenerateCode = () => {
+    const canvasContainer = this.refs.canvasContainer
+    if (!canvasContainer) return
+    const slider = canvasContainer.getSlider()
+    const sliderCode = slider.getOsuCode()
+    this.setState({ sliderCode })
   }
 }

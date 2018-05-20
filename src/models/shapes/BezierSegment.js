@@ -111,4 +111,8 @@ export default class BezierSegment {
       ctx.closePath()
     })
   }
+
+  static getBezierApproximation(points) {
+    return points
+  }
 }

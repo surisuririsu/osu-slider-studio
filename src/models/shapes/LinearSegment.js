@@ -14,4 +14,8 @@ export default class LinearSegment {
     ctx.fill()
     ctx.closePath()
   }
+
+  static getBezierApproximation(points) {
+    return points
+  }
 }

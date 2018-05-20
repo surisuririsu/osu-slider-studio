@@ -5,6 +5,12 @@ const FILL_SIZE = 60
 const BORDER_COLOR = 'white'
 const FILL_COLOR = '#1da1f2'
 
+const SLIDER_TYPES = {
+  arc: 'P',
+  bezier: 'B',
+  linear: 'L'
+}
+
 export default class Slider {
   segments = []
 
@@ -145,5 +151,51 @@ export default class Slider {
     this.segments.forEach(segment => segment.draw(ctx, FILL_SIZE))
 
     this.segments.forEach(segment => segment.drawControlPoints(ctx))
+  }
+
+  getMidpoint() {
+    const boundaries = this.segments.reduce((acc, curr) => {
+      const segBounds = curr.getBoundaries()
+      return {
+        maxX: Math.max(acc.maxX, segBounds.maxX),
+        maxY: Math.max(acc.maxY, segBounds.maxY),
+        minX: Math.min(acc.minX, segBounds.minX),
+        minY: Math.min(acc.minY, segBounds.minY)
+      }
+    }, { maxX: 0, maxY: 0, minX: 512, minY: 384 })
+    return {
+      x: Math.round((boundaries.maxX + boundaries.minX) / 2),
+      y: Math.round((boundaries.maxY + boundaries.minY) / 2)
+    }
+  }
+
+  getOsuCode() {
+    const midpoint = this.getMidpoint()
+    const dX = 256 - midpoint.x
+    const dY = 192 - midpoint.y
+
+    let allPoints
+    let sliderType = this.segments[0].getType()
+    if (this.getLength() === 1 && sliderType !== 'spline') {
+      allPoints = this.segments[0].points
+    } else {
+      sliderType = 'bezier'
+      allPoints = this.segments.reduce((acc, curr) => (
+        acc.concat(curr.getBezierPoints())
+      ), [])
+    }
+
+    allPoints = allPoints.map(p => ({
+      x: Math.round(p.x + dX),
+      y: Math.round(p.y + dY)
+    }))
+
+    let codeLine = ''
+    codeLine += `${allPoints[0].x},${allPoints[0].y}`
+    codeLine += `,0,2,0,${SLIDER_TYPES[sliderType]}|`
+    codeLine += allPoints.slice(1).map(p => `${p.x}:${p.y}`).join('|')
+    codeLine += ',1,500'
+
+    return codeLine
   }
 }

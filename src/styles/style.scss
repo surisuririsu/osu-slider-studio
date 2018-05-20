@@ -7,6 +7,10 @@ html, body {
   margin: 0;
 }
 
+h1 {
+  margin: 0;
+}
+
 a {
   color: #f9f9f9;
 }
@@ -22,6 +26,7 @@ a {
 #form_container {
   width: 240px;
   padding: 10px;
+  overflow-y: auto;
   background-color: #ff88cc;
 
   .formSection {
@@ -51,8 +56,15 @@ a {
     font-weight: bold;
   }
 
-  input {
+  input, textarea {
     width: calc(100% - 6px);
+  }
+
+  textarea {
+    height: 100px;
+    min-height: 50px;
+    resize: vertical;
+    font-family: Courier, Lucida, monospace;
   }
 }
 
@@ -65,8 +77,4 @@ a {
     margin: 0;
     background-image: linear-gradient(to right, #a3a3a3 1px, transparent 1px), linear-gradient(to bottom, #a3a3a3 1px, transparent 1px);
   }
-}
-
-h1 {
-  margin: 0;
 }
