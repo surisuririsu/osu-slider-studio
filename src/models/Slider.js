@@ -5,6 +5,13 @@ const FILL_SIZE = 60
 const BORDER_COLOR = 'white'
 const FILL_COLOR = '#1da1f2'
 
+const SLIDER_TYPES = {
+  arc: 'P',
+  bezier: 'B',
+  linear: 'L',
+  spline: 'C'
+}
+
 export default class Slider {
   segments = []
 
@@ -147,31 +154,46 @@ export default class Slider {
     this.segments.forEach(segment => segment.drawControlPoints(ctx))
   }
 
-  getAvgPoint() {
-    const pointSums = this.segments.reduce((acc, curr) => {
-      acc.totalX += curr.points.reduce((a, c) => (a + c.x), 0)
-      acc.totalY += curr.points.reduce((a, c) => (a + c.y), 0)
-      acc.count += curr.getLength()
-      return acc
-    }, { totalX: 0, totalY: 0, count: 0 })
+  getMidpoint() {
+    const boundaries = this.segments.reduce((acc, curr) => {
+      const segBounds = curr.getBoundaries()
+      return {
+        maxX: Math.max(acc.maxX, segBounds.maxX),
+        maxY: Math.max(acc.maxY, segBounds.maxY),
+        minX: Math.min(acc.minX, segBounds.minX),
+        minY: Math.min(acc.minY, segBounds.minY)
+      }
+    }, { maxX: 0, maxY: 0, minX: 512, minY: 384 })
     return {
-      x: Math.round(pointSums.totalX / pointSums.count),
-      y: Math.round(pointSums.totalY / pointSums.count)
+      x: Math.round((boundaries.maxX + boundaries.minX) / 2),
+      y: Math.round((boundaries.maxY + boundaries.minY) / 2)
     }
   }
 
   getOsuCode() {
-    const avgPoint = this.getAvgPoint()
-    const dX = 256 - avgPoint.x
-    const dY = 192 - avgPoint.y
+    const midpoint = this.getMidpoint()
+    const dX = 256 - midpoint.x
+    const dY = 192 - midpoint.y
 
-    const allPoints = this.segments.reduce((acc, curr) => (
-      acc.concat(curr.getBezierPoints().map(p => ({ x: p.x + dX, y: p.y + dY })))
-    ), [])
+    let allPoints
+    let sliderType = this.segments[0].getType()
+    if (false && this.getLength() === 1 && sliderType !== 'spline') {
+      allPoints = this.segments[0].points
+    } else {
+      sliderType = 'bezier'
+      allPoints = this.segments.reduce((acc, curr) => (
+        acc.concat(curr.getBezierPoints())
+      ), [])
+    }
+
+    allPoints = allPoints.map(p => ({
+      x: Math.round(p.x + dX),
+      y: Math.round(p.y + dY)
+    }))
 
     let codeLine = ''
     codeLine += `${allPoints[0].x},${allPoints[0].y}`
-    codeLine += ',0,2,0,B|'
+    codeLine += `,0,2,0,${SLIDER_TYPES[sliderType]}|`
     codeLine += allPoints.slice(1).map(p => `${p.x}:${p.y}`).join('|')
     codeLine += ',1,500'
 

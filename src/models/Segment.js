@@ -74,8 +74,8 @@ export default class Segment {
       if (index === 0) return acc
       const p1 = curr
       const p2 = this.points[index - 1]
-      const t1 = angle(point, p1, p2)
-      const t2 = angle(point, p2, p1)
+      const t1 = Math.abs(angle(point, p1, p2))
+      const t2 = Math.abs(angle(point, p2, p1))
       if (Math.min(t1, t2) > Math.PI / 2) return acc
       const a = (p2.y - p1.y) * point.x - (p2.x - p1.x) * point.y + p2.x * p1.y - p2.y * p1.x
       const dist = Math.abs(a) / Math.sqrt(d2(p2, p1))
@@ -166,5 +166,14 @@ export default class Segment {
 
   getBezierPoints() {
     return SEGMENT_TYPES[this.type].getBezierApproximation(this.points)
+  }
+
+  getBoundaries() {
+    return this.points.reduce((acc, curr) => ({
+      maxX: Math.max(acc.maxX, curr.x),
+      maxY: Math.max(acc.maxY, curr.y),
+      minX: Math.min(acc.minX, curr.x),
+      minY: Math.min(acc.minY, curr.y)
+    }), { maxX: 0, maxY: 0, minX: 512, minY: 384 })
   }
 }

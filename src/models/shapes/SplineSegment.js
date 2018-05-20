@@ -112,6 +112,14 @@ export default class SplineSegment {
   }
 
   static getBezierApproximation(points) {
-    return points
+    const cpoints = getControlPoints(points)
+    const bpoints = []
+    for (let i = 1; i < points.length; i++) {
+      bpoints.push(points[i - 1])
+      bpoints.push(cpoints[i - 1].cn)
+      bpoints.push(cpoints[i].cp)
+      bpoints.push(points[i])
+    }
+    return bpoints
   }
 }
