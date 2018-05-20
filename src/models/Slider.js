@@ -8,8 +8,7 @@ const FILL_COLOR = '#1da1f2'
 const SLIDER_TYPES = {
   arc: 'P',
   bezier: 'B',
-  linear: 'L',
-  spline: 'C'
+  linear: 'L'
 }
 
 export default class Slider {
@@ -177,7 +176,7 @@ export default class Slider {
 
     let allPoints
     let sliderType = this.segments[0].getType()
-    if (false && this.getLength() === 1 && sliderType !== 'spline') {
+    if (this.getLength() === 1 && sliderType !== 'spline') {
       allPoints = this.segments[0].points
     } else {
       sliderType = 'bezier'
