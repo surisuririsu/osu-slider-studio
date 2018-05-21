@@ -13,6 +13,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 // Source: https://github.com/dobarkod/canvas-bezier-multiple/blob/master/src/canvas-bezier-multipoint.js
 // Copied and modified May 12, 2018 by robertlai
 
+import BezierSegment from './BezierSegment'
 import { SCALE_FACTOR } from '../../utils/constants'
 
 function getControlPoints(points) {
@@ -85,7 +86,13 @@ function getControlPoints(points) {
 }
 
 export default class SplineSegment {
-  static draw(ctx, points, width) {
+  static draw(ctx, points, width, pct=1) {
+    if (pct !== 1) {
+      const bezierPoints = SplineSegment.getBezierApproximation(points)
+      BezierSegment.draw(ctx, bezierPoints, width, pct)
+      return
+    }
+
     const cpoints = getControlPoints(points)
 
     ctx.beginPath()
@@ -109,6 +116,16 @@ export default class SplineSegment {
     ctx.arc(points[0].x, points[0].y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
     ctx.fill()
     ctx.closePath()
+  }
+
+  static computeDist(points) {
+    const bezierPoints = SplineSegment.getBezierApproximation(points)
+    return BezierSegment.computeDist(bezierPoints)
+  }
+
+  static getEndPoint(points, pct) {
+    const bezierPoints = SplineSegment.getBezierApproximation(points)
+    return BezierSegment.getEndPoint(bezierPoints, pct)
   }
 
   static getBezierApproximation(points) {

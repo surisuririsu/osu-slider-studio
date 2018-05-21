@@ -24,6 +24,7 @@ THE SOFTWARE.
 // Ported and modified May 12, 2018 by robertlai
 
 import { SCALE_FACTOR } from '../../utils/constants'
+import { d2 } from '../../utils/helpers'
 
 const TOLERANCE = 0.25
 const TOLERANCE_SQ = Math.pow(TOLERANCE, 2)
@@ -101,15 +102,39 @@ function getPoints(points) {
 }
 
 export default class BezierSegment {
-  static draw(ctx, points, width) {
+  static draw(ctx, points, width, pct=1) {
     const output = getPoints(points)
+    const dist = BezierSegment.computeDist(points) * pct
 
-    output.forEach(p => {
+    let acc = 0
+    for (let i = 0; i < output.length - 1; i++) {
       ctx.beginPath()
-      ctx.arc(p.x, p.y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
+      ctx.arc(output[i].x, output[i].y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
       ctx.fill()
       ctx.closePath()
-    })
+      acc += Math.sqrt(d2(output[i + 1], output[i]))
+      if (acc > dist) break
+    }
+  }
+
+  static computeDist(points) {
+    const tpoints = getPoints(points)
+    let dist = 0
+    for (let i = 1; i < tpoints.length; i++) {
+      dist += Math.sqrt(d2(tpoints[i], tpoints[i - 1]))
+    }
+    return dist
+  }
+
+  static getEndPoint(points, pct) {
+    const tpoints = getPoints(points)
+    const dist = BezierSegment.computeDist(points) * pct
+    let acc = 0
+    for (let i = 1; i < tpoints.length; i++) {
+      if (acc > dist) return tpoints[i - 1]
+      acc += Math.sqrt(d2(tpoints[i], tpoints[i - 1]))
+    }
+    return tpoints[tpoints.length - 1]
   }
 
   static getBezierApproximation(points) {

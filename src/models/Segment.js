@@ -152,20 +152,26 @@ export default class Segment {
     })
   }
 
-  draw(ctx, width) {
+  draw(ctx, width, pct) {
     if (!this.getLength()) return
     const type = SEGMENT_TYPES[this.type]
     const scaledPoints = this.points.map((point) => ({
       x: point.x * SCALE_FACTOR,
       y: point.y * SCALE_FACTOR
     }))
-    type.draw(ctx, scaledPoints, width)
+    type.draw(ctx, scaledPoints, width, pct)
+    const endPoint = pct === 1 ? scaledPoints[scaledPoints.length - 1] : type.getEndPoint(scaledPoints, pct)
     Circle.draw(ctx, scaledPoints[0], width)
-    Circle.draw(ctx, scaledPoints[scaledPoints.length - 1], width)
+    Circle.draw(ctx, endPoint, width)
   }
 
   getBezierPoints() {
     return SEGMENT_TYPES[this.type].getBezierApproximation(this.points)
+  }
+
+  getDist() {
+    if (!this.points.length) return 0
+    return SEGMENT_TYPES[this.type].computeDist(this.points)
   }
 
   getBoundaries() {

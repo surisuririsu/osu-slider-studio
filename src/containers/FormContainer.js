@@ -19,7 +19,6 @@ export default class FormContainer extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
-      tempo: 120,
       baseSv: 1,
       svMultiplier: 1,
       beatSnap: '1/4'
@@ -33,16 +32,11 @@ export default class FormContainer extends React.PureComponent {
         <span>by <a href="https://osu.ppy.sh/u/2099102">Little</a></span>
 
         <form id="settings_section" className="formSection" onSubmit={this.handleSubmit}>
-          <FloatInput key="tempo" label="Tempo (BPM)" onChange={this.handleChangeTempo} value={this.state.tempo} />
           <FloatInput key="base_sv" label="Base SV" onChange={this.handleChangeBaseSv} value={this.state.baseSv} />
           <FloatInput key="sv_multiplier" label="SV Multiplier" onChange={this.handleChangeSvMultiplier} value={this.state.svMultiplier} />
           <RangeInput key="beat_snap" label="Beat snap" options={Object.keys(BEAT_SNAPPINGS)} onChange={this.handleChangeBeatSnap} value={this.state.beatSnap} />
           <button type="submit">Apply settings</button>
         </form>
-
-        <div id="canvas_section" className="formSection">
-
-        </div>
 
         <div id="code_section" className="formSection">
           <CodeArea label="Code" value={this.props.code} />
@@ -52,9 +46,9 @@ export default class FormContainer extends React.PureComponent {
     )
   }
 
-  handleChangeTempo = (e) => {
-    this.setState({ tempo: e.target.value })
-  }
+        // <div id="canvas_section" className="formSection">
+
+        // </div>
 
   handleChangeBaseSv = (e) => {
     this.setState({ baseSv: e.target.value })
@@ -75,20 +69,19 @@ export default class FormContainer extends React.PureComponent {
   handleSubmit = (e) => {
     e.preventDefault()
 
-    const tempo = parseFloat(this.state.tempo)
     const baseSv = parseFloat(this.state.baseSv)
     const svMultiplier = parseFloat(this.state.svMultiplier)
     const beatSnap = BEAT_SNAPPINGS[this.state.beatSnap]
-    if (!(tempo && baseSv && svMultiplier)) {
+    if (!(baseSv && svMultiplier)) {
       alert('Invalid settings.')
       return
     }
 
     this.props.onChangeSettings({
-      tempo, baseSv, svMultiplier, beatSnap
+      baseSv, svMultiplier, beatSnap
     })
     this.setState({
-      tempo, baseSv, svMultiplier
+      baseSv, svMultiplier
     })
   }
 }

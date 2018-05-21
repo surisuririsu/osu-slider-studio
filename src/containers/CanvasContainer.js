@@ -11,9 +11,11 @@ const RIGHT_BUTTON = 2
 export default class CanvasContainer extends React.Component {
   constructor(props) {
     super(props)
+    const tickDist = this.computeTickDistance(props.settings)
     this.state = {
       drawing: true,
-      focusPoint: null
+      focusPoint: null,
+      tickDist
     }
     this.slider = new Slider()
   }
@@ -23,6 +25,11 @@ export default class CanvasContainer extends React.Component {
     document.onkeydown = this.handleKeyDown
     document.onkeyup = this.handleKeyUp
     this.redraw()
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const tickDist = this.computeTickDistance(nextProps.settings)
+    this.setState({ tickDist })
   }
 
   render() {
@@ -137,8 +144,15 @@ export default class CanvasContainer extends React.Component {
     e.preventDefault()
   }
 
-  getSlider() {
-    return this.slider
+  getSliderCode() {
+    if (!this.state.tickDist) return ''
+    return this.slider.getOsuCode(this.state.tickDist)
+  }
+
+  computeTickDistance(settings) {
+    const { baseSv, svMultiplier, beatSnap } = settings
+    const dist = beatSnap * baseSv * svMultiplier * 100
+    return dist
   }
 
   computePtFromEvent(e) {
@@ -163,6 +177,6 @@ export default class CanvasContainer extends React.Component {
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    this.slider.draw(ctx)
+    this.slider.draw(ctx, this.state.tickDist)
   }
 }

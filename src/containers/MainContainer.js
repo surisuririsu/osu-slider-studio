@@ -8,10 +8,9 @@ export default class MainContainer extends React.PureComponent {
     super(props)
     this.state = {
       settings: {
-        tempo: 120,
         baseSv: 1,
         svMultiplier: 1,
-        beatSnap: '1/4'
+        beatSnap: 0.25
       },
       gridSize: 4,
       sliderCode: ''
@@ -29,6 +28,7 @@ export default class MainContainer extends React.PureComponent {
       <CanvasContainer
         key="canvas_container"
         ref="canvasContainer"
+        settings={this.state.settings}
         gridSize={this.state.gridSize}
       />
     ]
@@ -45,8 +45,6 @@ export default class MainContainer extends React.PureComponent {
   handleGenerateCode = () => {
     const canvasContainer = this.refs.canvasContainer
     if (!canvasContainer) return
-    const slider = canvasContainer.getSlider()
-    const sliderCode = slider.getOsuCode()
-    this.setState({ sliderCode })
+    this.setState({ sliderCode: canvasContainer.getSliderCode() })
   }
 }

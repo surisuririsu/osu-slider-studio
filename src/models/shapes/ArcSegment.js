@@ -1,3 +1,4 @@
+import BezierSegment from './BezierSegment'
 import { SCALE_FACTOR } from '../../utils/constants'
 import { angle, d2 } from '../../utils/helpers'
 
@@ -70,7 +71,13 @@ function isClockwise(p1, p2, p3) {
 }
 
 export default class ArcSegment {
-  static draw(ctx, points, width) {
+  static draw(ctx, points, width, pct=1) {
+    if (pct !== 1) {
+      const bezierPoints = ArcSegment.getBezierApproximation(points)
+      BezierSegment.draw(ctx, bezierPoints, width, pct)
+      return
+    }
+
     const center = getCenter(...points)
     const radius = Math.sqrt(d2(points[0], center))
     const angles = orderedAngles(center, points[0], points[1], points[2])
@@ -84,6 +91,28 @@ export default class ArcSegment {
     ctx.arc(points[0].x, points[0].y, width * SCALE_FACTOR / 2, 0, 2 * Math.PI, false)
     ctx.fill()
     ctx.closePath()
+  }
+
+  static computeDist(points) {
+    const center = getCenter(...points)
+    const radius = Math.sqrt(d2(points[0], center))
+    const cw = isClockwise(...points)
+    let a1 = angle(points[0], center, points[1])
+    let a2 = angle(points[1], center, points[2])
+    if (cw) {
+      if (a1 < 0) a1 += 2 * Math.PI
+      if (a2 < 0) a2 += 2 * Math.PI
+    } else {
+      if (a1 > 0) a1 -= 2 * Math.PI
+      if (a2 > 0) a2 -= 2 * Math.PI
+    }
+    const arcAngle = Math.abs(a1 + a2)
+    return radius * arcAngle
+  }
+
+  static getEndPoint(points, pct) {
+    const bezierPoints = ArcSegment.getBezierApproximation(points)
+    return BezierSegment.getEndPoint(bezierPoints, pct)
   }
 
   static getBezierApproximation(points) {
