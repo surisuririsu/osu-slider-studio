@@ -33,12 +33,15 @@ export default class CanvasContainer extends React.Component {
   }
 
   render() {
-    const gridSize = (this.props.gridSize || 0) * SCALE_FACTOR
+    const gridSize = this.props.gridSize * SCALE_FACTOR
+    const style = gridSize ? {
+      backgroundSize: `${gridSize}px ${gridSize}px`
+    } : {}
     return (
       <div ref="container" id="canvas_container">
         <canvas
           ref="canvas"
-          style={{ backgroundSize: `${gridSize}px ${gridSize}px` }}
+          style={style}
           onMouseDown={this.handleMouseDown}
           onMouseMove={this.handleMouseMove}
           onMouseUp={this.handleMouseUp}
@@ -156,7 +159,7 @@ export default class CanvasContainer extends React.Component {
   }
 
   computePtFromEvent(e) {
-    const gridSize = this.props.gridSize
+    const gridSize = this.props.gridSize || 1
     const x = Math.round((e.clientX - FORM_WIDTH) / SCALE_FACTOR / gridSize) * gridSize
     const y = Math.round(e.clientY / SCALE_FACTOR / gridSize) * gridSize
     return { x, y }
