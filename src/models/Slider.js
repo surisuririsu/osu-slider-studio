@@ -194,8 +194,21 @@ export default class Slider {
     if (this.getLength() < 1 || this.segments[0].getLength() < 2) return ''
 
     const midpoint = this.getMidpoint()
-    const dX = 256 - midpoint.x
-    const dY = 192 - midpoint.y
+    let dX = 256 - midpoint.x
+    let dY = 192 - midpoint.y
+
+    const headX = this.segments[0].points[0].x
+    if (headX + dX < 0) {
+      dX -= headX + dX
+    } else if (headX + dX > 512) {
+      dX -= headX + dX - 512
+    }
+    const headY = this.segments[0].points[0].y
+    if (headY + dY < 0) {
+      dY -= headY + dY
+    } else if (headY + dY > 512) {
+      dY -= headY + dY - 512
+    }
 
     let allPoints
     let sliderType = this.segments[0].getType()
