@@ -10,7 +10,8 @@ export default class MainContainer extends React.PureComponent {
       settings: {
         tempo: 120,
         baseSv: 1,
-        svMultiplier: 1
+        svMultiplier: 1,
+        beatSnap: '1/4'
       },
       gridSize: 4,
       sliderCode: ''

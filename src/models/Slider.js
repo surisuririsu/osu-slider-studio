@@ -128,7 +128,13 @@ export default class Slider {
   }
 
   setAnchor(segIndex, ptIndex) {
-    const newSegments = Segment.split(this.segments[segIndex], ptIndex)
+    const segment = this.segments[segIndex]
+    if (segIndex === this.segments.length - 1) {
+      if (ptIndex === 0 && segment.getLength() === 2) return
+    } else {
+      if (ptIndex === 0 || ptIndex === segment.getLength() - 1) return
+    }
+    const newSegments = Segment.split(segment, ptIndex)
     this.segments.splice(segIndex, 1, ...newSegments)
   }
 

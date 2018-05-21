@@ -1,6 +1,19 @@
 import React from 'react'
 import FloatInput from '../components/FloatInput'
+import RangeInput from '../components/RangeInput'
 import CodeArea from '../components/CodeArea'
+
+const BEAT_SNAPPINGS = {
+  '1/1': 1,
+  '1/2': 1 / 2,
+  '1/3': 1 / 3,
+  '1/4': 1 / 4,
+  '1/6': 1 / 6,
+  '1/8': 1 / 8,
+  '1/12': 1 / 12,
+  '1/16': 1 / 16,
+  'Any': 0
+}
 
 export default class FormContainer extends React.PureComponent {
   constructor(props) {
@@ -8,7 +21,8 @@ export default class FormContainer extends React.PureComponent {
     this.state = {
       tempo: 120,
       baseSv: 1,
-      svMultiplier: 1
+      svMultiplier: 1,
+      beatSnap: '1/4'
     }
   }
 
@@ -22,6 +36,7 @@ export default class FormContainer extends React.PureComponent {
           <FloatInput key="tempo" label="Tempo (BPM)" onChange={this.handleChangeTempo} value={this.state.tempo} />
           <FloatInput key="base_sv" label="Base SV" onChange={this.handleChangeBaseSv} value={this.state.baseSv} />
           <FloatInput key="sv_multiplier" label="SV Multiplier" onChange={this.handleChangeSvMultiplier} value={this.state.svMultiplier} />
+          <RangeInput key="beat_snap" label="Beat snap" options={Object.keys(BEAT_SNAPPINGS)} onChange={this.handleChangeBeatSnap} value={this.state.beatSnap} />
           <button type="submit">Apply settings</button>
         </form>
 
@@ -53,19 +68,24 @@ export default class FormContainer extends React.PureComponent {
     this.props.onGenerateCode()
   }
 
+  handleChangeBeatSnap = (snap) => {
+    this.setState({ beatSnap: snap })
+  }
+
   handleSubmit = (e) => {
     e.preventDefault()
 
     const tempo = parseFloat(this.state.tempo)
     const baseSv = parseFloat(this.state.baseSv)
     const svMultiplier = parseFloat(this.state.svMultiplier)
+    const beatSnap = BEAT_SNAPPINGS[this.state.beatSnap]
     if (!(tempo && baseSv && svMultiplier)) {
       alert('Invalid settings.')
       return
     }
 
     this.props.onChangeSettings({
-      tempo, baseSv, svMultiplier
+      tempo, baseSv, svMultiplier, beatSnap
     })
     this.setState({
       tempo, baseSv, svMultiplier
