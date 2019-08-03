@@ -147,14 +147,29 @@ export default class Slider {
     this.segments.splice(anchorPair[0].segIndex, 2, segment)
   }
 
-  draw(ctx) {
+  draw(ctx, tickDist) {
+    const fullDist = this.segments.reduce((acc, curr) => (
+      acc + curr.getDist()
+    ), 0)
+    let lSegIndex = this.segments.length - 1
+    if (this.segments[lSegIndex].getLength() === 1 && lSegIndex > 0) {
+      lSegIndex--
+    }
+    const rem = fullDist % tickDist
+    const lastSeg = this.segments[lSegIndex]
+    const lastPct = Math.max((lastSeg.getDist() - rem) / lastSeg.getDist(), 0)
+
     ctx.fillStyle = BORDER_COLOR
     ctx.strokeStyle = BORDER_COLOR
-    this.segments.forEach(segment => segment.draw(ctx, BORDER_SIZE))
+    this.segments.forEach((segment, i) =>
+      segment.draw(ctx, BORDER_SIZE, i === lSegIndex ? lastPct : 1)
+    )
 
     ctx.fillStyle = FILL_COLOR
     ctx.strokeStyle = FILL_COLOR
-    this.segments.forEach(segment => segment.draw(ctx, FILL_SIZE))
+    this.segments.forEach((segment, i) =>
+      segment.draw(ctx, FILL_SIZE, i === lSegIndex ? lastPct : 1)
+    )
 
     this.segments.forEach(segment => segment.drawControlPoints(ctx))
   }
@@ -175,10 +190,31 @@ export default class Slider {
     }
   }
 
-  getOsuCode() {
+  getFullDist() {
+    return this.segments.reduce((acc, curr) => (
+      acc + curr.getDist()
+    ), 0)
+  }
+
+  getOsuCode(tickDist) {
+    if (this.getLength() < 1 || this.segments[0].getLength() < 2) return ''
+
     const midpoint = this.getMidpoint()
-    const dX = 256 - midpoint.x
-    const dY = 192 - midpoint.y
+    let dX = 256 - midpoint.x
+    let dY = 192 - midpoint.y
+
+    const headX = this.segments[0].points[0].x
+    if (headX + dX < 0) {
+      dX -= headX + dX
+    } else if (headX + dX > 512) {
+      dX -= headX + dX - 512
+    }
+    const headY = this.segments[0].points[0].y
+    if (headY + dY < 0) {
+      dY -= headY + dY
+    } else if (headY + dY > 512) {
+      dY -= headY + dY - 512
+    }
 
     let allPoints
     let sliderType = this.segments[0].getType()
@@ -196,11 +232,18 @@ export default class Slider {
       y: Math.round(p.y + dY)
     }))
 
+    const fullDist = this.getFullDist()
+    let lSegIndex = this.segments.length - 1
+    if (this.segments[lSegIndex].getLength() === 1 && lSegIndex > 0) {
+      lSegIndex--
+    }
+    const rem = fullDist % tickDist
+
     let codeLine = ''
     codeLine += `${allPoints[0].x},${allPoints[0].y}`
     codeLine += `,0,2,0,${SLIDER_TYPES[sliderType]}|`
     codeLine += allPoints.slice(1).map(p => `${p.x}:${p.y}`).join('|')
-    codeLine += ',1,500'
+    codeLine += `,1,${fullDist - rem}`
 
     return codeLine
   }

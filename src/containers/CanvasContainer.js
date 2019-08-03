@@ -3,6 +3,7 @@ import Slider from '../models/Slider'
 import { SCALE_FACTOR } from '../utils/constants'
 
 const FORM_WIDTH = 260
+const TIMELINE_HEIGHT = 60
 const CTRL_KEY = 17
 const ESC_KEY = 27
 const LEFT_BUTTON = 0
@@ -11,9 +12,11 @@ const RIGHT_BUTTON = 2
 export default class CanvasContainer extends React.Component {
   constructor(props) {
     super(props)
+    const tickDist = this.computeTickDistance(props.settings)
     this.state = {
       drawing: true,
-      focusPoint: null
+      focusPoint: null,
+      tickDist
     }
     this.slider = new Slider()
   }
@@ -25,13 +28,21 @@ export default class CanvasContainer extends React.Component {
     this.redraw()
   }
 
+  componentWillReceiveProps(nextProps) {
+    const tickDist = this.computeTickDistance(nextProps.settings)
+    this.setState({ tickDist })
+  }
+
   render() {
-    const gridSize = (this.props.gridSize || 0) * SCALE_FACTOR
+    const gridSize = this.props.gridSize * SCALE_FACTOR
+    const style = gridSize ? {
+      backgroundSize: `${gridSize}px ${gridSize}px`
+    } : {}
     return (
       <div ref="container" id="canvas_container">
         <canvas
           ref="canvas"
-          style={{ backgroundSize: `${gridSize}px ${gridSize}px` }}
+          style={style}
           onMouseDown={this.handleMouseDown}
           onMouseMove={this.handleMouseMove}
           onMouseUp={this.handleMouseUp}
@@ -83,6 +94,8 @@ export default class CanvasContainer extends React.Component {
     } else if (this.state.focusPoint) {
       const { segIndex, ptIndex } = this.state.focusPoint
       this.slider.movePoint(segIndex, ptIndex, mousePoint)
+    } else {
+      return
     }
     this.redraw()
   }
@@ -137,14 +150,30 @@ export default class CanvasContainer extends React.Component {
     e.preventDefault()
   }
 
-  getSlider() {
-    return this.slider
+  clear() {
+    this.slider = new Slider()
+    this.setState({
+      drawing: true,
+      focusPoint: null,
+    })
+    this.redraw()
+  }
+
+  getSliderCode() {
+    if (!this.state.tickDist) return ''
+    return this.slider.getOsuCode(this.state.tickDist)
+  }
+
+  computeTickDistance(settings) {
+    const { baseSv, svMultiplier, beatSnap } = settings
+    const dist = beatSnap * baseSv * svMultiplier * 100
+    return dist
   }
 
   computePtFromEvent(e) {
-    const gridSize = this.props.gridSize
+    const gridSize = this.props.gridSize || 1
     const x = Math.round((e.clientX - FORM_WIDTH) / SCALE_FACTOR / gridSize) * gridSize
-    const y = Math.round(e.clientY / SCALE_FACTOR / gridSize) * gridSize
+    const y = Math.round((e.clientY - TIMELINE_HEIGHT) / SCALE_FACTOR / gridSize) * gridSize
     return { x, y }
   }
 
@@ -155,6 +184,13 @@ export default class CanvasContainer extends React.Component {
     canvas.height = container.clientHeight
   }
 
+  reportSliderChange() {
+    const { settings, onSliderChange } = this.props
+    const tickDist = this.computeTickDistance(settings)
+    const fullDist = this.slider.getFullDist()
+    onSliderChange(Math.floor(fullDist / tickDist) * settings.beatSnap)
+  }
+
   redraw() {
     const canvas = this.refs.canvas
     if (!canvas || !canvas.getContext) return
@@ -163,6 +199,8 @@ export default class CanvasContainer extends React.Component {
     const ctx = canvas.getContext('2d')
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-    this.slider.draw(ctx)
+    this.slider.draw(ctx, this.state.tickDist)
+
+    this.reportSliderChange()
   }
 }
