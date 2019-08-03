@@ -1,5 +1,6 @@
 import React from 'react'
 import FormContainer from './FormContainer'
+import ToolbarContainer from './ToolbarContainer'
 import CanvasContainer from './CanvasContainer'
 import '../styles/style.scss'
 
@@ -13,7 +14,8 @@ export default class MainContainer extends React.PureComponent {
         beatSnap: 0.25
       },
       gridSize: 0,
-      sliderCode: ''
+      sliderCode: '',
+      sliderLength: 0,
     }
   }
 
@@ -30,20 +32,30 @@ export default class MainContainer extends React.PureComponent {
   }
 
   render() {
-    return [
-      <FormContainer
-        key="form_container"
-        code={this.state.sliderCode}
-        onChangeSettings={this.handleChangeSettings}
-        onGenerateCode={this.handleGenerateCode}
-      />,
-      <CanvasContainer
-        key="canvas_container"
-        ref="canvasContainer"
-        settings={this.state.settings}
-        gridSize={this.state.gridSize}
-      />
-    ]
+    return (
+      <React.Fragment>
+        <FormContainer
+          key="form_container"
+          code={this.state.sliderCode}
+          hasLength={this.state.sliderLength > 0}
+          onChangeSettings={this.handleChangeSettings}
+          onGenerateCode={this.handleGenerateCode}
+        />
+        <div id="right_content">
+          <ToolbarContainer
+            sliderLength={this.state.sliderLength}
+            onClear={this.handleClear}
+          />
+          <CanvasContainer
+            key="canvas_container"
+            ref="canvasContainer"
+            settings={this.state.settings}
+            gridSize={this.state.gridSize}
+            onSliderChange={this.handleSliderChange}
+          />
+        </div>
+      </React.Fragment>
+    )
   }
 
   handleChangeSettings = (settings) => {
@@ -52,6 +64,16 @@ export default class MainContainer extends React.PureComponent {
 
   handleChangeGridSize = (gridSize) => {
     this.setState({ gridSize })
+  }
+
+  handleSliderChange = (sliderLength) => {
+    this.setState({ sliderLength })
+  }
+
+  handleClear = () => {
+    const canvasContainer = this.refs.canvasContainer
+    if (!canvasContainer) return
+    canvasContainer.clear()
   }
 
   handleGenerateCode = () => {

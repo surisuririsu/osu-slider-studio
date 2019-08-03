@@ -21,11 +21,14 @@ export default class FormContainer extends React.PureComponent {
     this.state = {
       baseSv: 1,
       svMultiplier: 1,
-      beatSnap: '1/4'
+      beatSnap: '1/4',
+      hasChanges: false,
     }
   }
 
   render() {
+    const { hasLength } = this.props
+    const { hasChanges } = this.state
     return (
       <div id="form_container">
         <h1>SliderStudio</h1>
@@ -35,27 +38,41 @@ export default class FormContainer extends React.PureComponent {
           <FloatInput key="base_sv" label="Base SV" onChange={this.handleChangeBaseSv} value={this.state.baseSv} />
           <FloatInput key="sv_multiplier" label="SV Multiplier" onChange={this.handleChangeSvMultiplier} value={this.state.svMultiplier} />
           <RangeInput key="beat_snap" label="Beat snap" options={Object.keys(BEAT_SNAPPINGS)} onChange={this.handleChangeBeatSnap} value={this.state.beatSnap} />
-          <button type="submit">Apply settings</button>
+          <button
+            disabled={!hasChanges}
+            className={hasChanges ? '' : 'disabled'}
+            type="submit"
+          >
+            Apply settings
+          </button>
         </form>
 
         <div id="code_section" className="formSection">
           <CodeArea label="Code" value={this.props.code} />
-          <button onClick={this.handleCodeClick}>Generate code</button>
+          <button
+            disabled={!hasChanges}
+            className={hasChanges ? '' : 'disabled'}
+            onClick={this.handleCodeClick}
+          >
+            Generate code
+          </button>
         </div>
       </div>
     )
   }
 
-        // <div id="canvas_section" className="formSection">
-
-        // </div>
-
   handleChangeBaseSv = (e) => {
-    this.setState({ baseSv: e.target.value })
+    this.setState({
+      baseSv: e.target.value,
+      hasChanges: true,
+    })
   }
 
   handleChangeSvMultiplier = (e) => {
-    this.setState({ svMultiplier: e.target.value })
+    this.setState({
+      svMultiplier: e.target.value,
+      hasChanges: true,
+    })
   }
 
   handleCodeClick = (e) => {
@@ -63,7 +80,10 @@ export default class FormContainer extends React.PureComponent {
   }
 
   handleChangeBeatSnap = (snap) => {
-    this.setState({ beatSnap: snap })
+    this.setState({
+      beatSnap: snap,
+      hasChanges: true,
+    })
   }
 
   handleSubmit = (e) => {
@@ -81,7 +101,8 @@ export default class FormContainer extends React.PureComponent {
       baseSv, svMultiplier, beatSnap
     })
     this.setState({
-      baseSv, svMultiplier
+      baseSv, svMultiplier,
+      hasChanges: false,
     })
   }
 }

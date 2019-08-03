@@ -3,6 +3,7 @@ import Slider from '../models/Slider'
 import { SCALE_FACTOR } from '../utils/constants'
 
 const FORM_WIDTH = 260
+const TIMELINE_HEIGHT = 60
 const CTRL_KEY = 17
 const ESC_KEY = 27
 const LEFT_BUTTON = 0
@@ -93,6 +94,8 @@ export default class CanvasContainer extends React.Component {
     } else if (this.state.focusPoint) {
       const { segIndex, ptIndex } = this.state.focusPoint
       this.slider.movePoint(segIndex, ptIndex, mousePoint)
+    } else {
+      return
     }
     this.redraw()
   }
@@ -147,6 +150,15 @@ export default class CanvasContainer extends React.Component {
     e.preventDefault()
   }
 
+  clear() {
+    this.slider = new Slider()
+    this.setState({
+      drawing: true,
+      focusPoint: null,
+    })
+    this.redraw()
+  }
+
   getSliderCode() {
     if (!this.state.tickDist) return ''
     return this.slider.getOsuCode(this.state.tickDist)
@@ -161,7 +173,7 @@ export default class CanvasContainer extends React.Component {
   computePtFromEvent(e) {
     const gridSize = this.props.gridSize || 1
     const x = Math.round((e.clientX - FORM_WIDTH) / SCALE_FACTOR / gridSize) * gridSize
-    const y = Math.round(e.clientY / SCALE_FACTOR / gridSize) * gridSize
+    const y = Math.round((e.clientY - TIMELINE_HEIGHT) / SCALE_FACTOR / gridSize) * gridSize
     return { x, y }
   }
 
@@ -170,6 +182,13 @@ export default class CanvasContainer extends React.Component {
     const container = this.refs.container
     canvas.width = container.clientWidth
     canvas.height = container.clientHeight
+  }
+
+  reportSliderChange() {
+    const { settings, onSliderChange } = this.props
+    const tickDist = this.computeTickDistance(settings)
+    const fullDist = this.slider.getFullDist()
+    onSliderChange(Math.floor(fullDist / tickDist) * settings.beatSnap)
   }
 
   redraw() {
@@ -181,5 +200,7 @@ export default class CanvasContainer extends React.Component {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
     this.slider.draw(ctx, this.state.tickDist)
+
+    this.reportSliderChange()
   }
 }

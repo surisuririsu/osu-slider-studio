@@ -190,6 +190,12 @@ export default class Slider {
     }
   }
 
+  getFullDist() {
+    return this.segments.reduce((acc, curr) => (
+      acc + curr.getDist()
+    ), 0)
+  }
+
   getOsuCode(tickDist) {
     if (this.getLength() < 1 || this.segments[0].getLength() < 2) return ''
 
@@ -226,9 +232,7 @@ export default class Slider {
       y: Math.round(p.y + dY)
     }))
 
-    const fullDist = this.segments.reduce((acc, curr) => (
-      acc + curr.getDist()
-    ), 0)
+    const fullDist = this.getFullDist()
     let lSegIndex = this.segments.length - 1
     if (this.segments[lSegIndex].getLength() === 1 && lSegIndex > 0) {
       lSegIndex--
