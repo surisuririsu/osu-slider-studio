@@ -9,3 +9,14 @@ export function angle(p1, p2, p3) {
   const b = Math.atan2(p3.y - p2.y, p3.x - p2.x)
   return a - b
 }
+
+export function trackEvent(action, label) {
+  if (!window.gtag) {
+    return
+  }
+
+  window.gtag('event', action,  {
+    event_category: 'sliderstudio',
+    event_label: label,
+  })
+}

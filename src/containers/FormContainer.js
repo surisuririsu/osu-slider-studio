@@ -2,6 +2,7 @@ import React from 'react'
 import FloatInput from '../components/FloatInput'
 import RangeInput from '../components/RangeInput'
 import CodeArea from '../components/CodeArea'
+import { trackEvent } from '../utils/helpers'
 
 const BEAT_SNAPPINGS = {
   '1/1': 1,
@@ -32,7 +33,7 @@ export default class FormContainer extends React.PureComponent {
     return (
       <div id="form_container">
         <h1>SliderStudio</h1>
-        <span>by <a href="https://osu.ppy.sh/u/2099102">Little</a></span>
+        <span>by <a onClick={this.handleProfileClick} href="https://osu.ppy.sh/u/2099102">Little</a></span>
 
         <form id="settings_section" className="formSection" onSubmit={this.handleSubmit}>
           <FloatInput key="base_sv" label="Base SV" onChange={this.handleChangeBaseSv} value={this.state.baseSv} />
@@ -50,8 +51,8 @@ export default class FormContainer extends React.PureComponent {
         <div id="code_section" className="formSection">
           <CodeArea label="Code" value={this.props.code} />
           <button
-            disabled={!hasChanges}
-            className={hasChanges ? '' : 'disabled'}
+            disabled={!hasLength}
+            className={hasLength ? '' : 'disabled'}
             onClick={this.handleCodeClick}
           >
             Generate code
@@ -59,6 +60,10 @@ export default class FormContainer extends React.PureComponent {
         </div>
       </div>
     )
+  }
+
+  handleProfileClick = () => {
+    trackEvent('profileClick')
   }
 
   handleChangeBaseSv = (e) => {

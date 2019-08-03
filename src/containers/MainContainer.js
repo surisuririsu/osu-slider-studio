@@ -2,6 +2,7 @@ import React from 'react'
 import FormContainer from './FormContainer'
 import ToolbarContainer from './ToolbarContainer'
 import CanvasContainer from './CanvasContainer'
+import { trackEvent } from '../utils/helpers'
 import '../styles/style.scss'
 
 export default class MainContainer extends React.PureComponent {
@@ -60,10 +61,12 @@ export default class MainContainer extends React.PureComponent {
 
   handleChangeSettings = (settings) => {
     this.setState({ settings })
+    trackEvent('changeSettings')
   }
 
   handleChangeGridSize = (gridSize) => {
     this.setState({ gridSize })
+    trackEvent('changeGridSize')
   }
 
   handleSliderChange = (sliderLength) => {
@@ -74,11 +77,13 @@ export default class MainContainer extends React.PureComponent {
     const canvasContainer = this.refs.canvasContainer
     if (!canvasContainer) return
     canvasContainer.clear()
+    trackEvent('clear')
   }
 
   handleGenerateCode = () => {
     const canvasContainer = this.refs.canvasContainer
     if (!canvasContainer) return
     this.setState({ sliderCode: canvasContainer.getSliderCode() })
+    trackEvent('generateCode')
   }
 }
