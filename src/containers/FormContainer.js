@@ -13,7 +13,6 @@ const BEAT_SNAPPINGS = {
   '1/8': 1 / 8,
   '1/12': 1 / 12,
   '1/16': 1 / 16,
-  'Any': 0
 }
 
 export default class FormContainer extends React.PureComponent {
