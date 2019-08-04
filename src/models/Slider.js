@@ -129,13 +129,18 @@ export default class Slider {
 
   setAnchor(segIndex, ptIndex) {
     const segment = this.segments[segIndex]
+    const segLength = segment.getLength()
     if (segIndex === this.segments.length - 1) {
-      if (ptIndex === 0 && segment.getLength() === 2) return
+      if (ptIndex === 0 && segLength === 2) return
     } else {
-      if (ptIndex === 0 || ptIndex === segment.getLength() - 1) return
+      if (ptIndex === 0 || ptIndex === segLength - 1) return
     }
-    const newSegments = Segment.split(segment, ptIndex)
-    this.segments.splice(segIndex, 1, ...newSegments)
+    if (segLength === 3 && segment.getType() === 'bezier') {
+      segment.setType('arc')
+    } else {
+      const newSegments = Segment.split(segment, ptIndex)
+      this.segments.splice(segIndex, 1, ...newSegments)
+    }
   }
 
   resetAnchor(segIndex, ptIndex) {
