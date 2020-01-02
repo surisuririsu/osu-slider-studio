@@ -34,6 +34,10 @@ export default class FormContainer extends React.PureComponent {
         <h1>SliderStudio</h1>
         <span>by <a onClick={this.handleProfileClick} href="https://osu.ppy.sh/u/2099102">Little</a></span>
 
+        <div id="info_section" className="formSection">
+          <button onClick={this.handleReadMeClick}>Read me</button>
+        </div>
+
         <form id="settings_section" className="formSection" onSubmit={this.handleSubmit}>
           <FloatInput key="base_sv" label="Base SV" onChange={this.handleChangeBaseSv} value={this.state.baseSv} />
           <FloatInput key="sv_multiplier" label="SV Multiplier" onChange={this.handleChangeSvMultiplier} value={this.state.svMultiplier} />
@@ -63,6 +67,17 @@ export default class FormContainer extends React.PureComponent {
 
   handleProfileClick = () => {
     trackEvent('profileClick')
+  }
+
+  handleReadMeClick = () => {
+    alert(
+      'This tool is a work-in-progress (there will be bugs and missing features!).\n\n' +
+      'Usage:\n' +
+      '- Enter the slider velocity and beat snapping settings, and click "Apply settings".\n' +
+      '- Slider point placement is similar to osu! editor, but defaults to bezier curve.\n' +
+      '- To create a perfect curve segment, hold CTRL before placing the 3rd point.\n' +
+      '- To create a bezier spline segment, hold CTRL before placing the 4th point.'
+    )
   }
 
   handleChangeBaseSv = (e) => {

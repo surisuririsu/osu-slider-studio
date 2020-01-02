@@ -3,7 +3,7 @@ import Slider from '../models/Slider'
 import { SCALE_FACTOR } from '../utils/constants'
 
 const FORM_WIDTH = 260
-const TIMELINE_HEIGHT = 60
+const TIMELINE_HEIGHT = 52
 const CTRL_KEY = 17
 const ESC_KEY = 27
 const LEFT_BUTTON = 0
