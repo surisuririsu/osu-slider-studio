@@ -71,7 +71,6 @@ export default class FormContainer extends React.PureComponent {
 
   handleReadMeClick = () => {
     alert(
-      'This tool is a work-in-progress (there will be bugs and missing features!).\n\n' +
       'Usage:\n' +
       '- Enter the slider velocity and beat snapping settings, and click "Apply settings".\n' +
       '- Slider point placement is similar to osu! editor, but defaults to bezier curve.\n' +
