@@ -121,7 +121,7 @@ export default class CanvasContainer extends React.Component {
       } else if (e.ctrlKey) {
         if (nearPoint.segIndex !== null) {
           const { segIndex, ptIndex } = nearPoint
-          this.slider.setAnchor(segIndex, ptIndex)
+          this.slider.upgradePoint(segIndex, ptIndex)
         } else if (nearEdge.segIndex !== null) {
           const { segIndex, edgeIndex } = nearEdge
           this.slider.insertPoint(mousePoint, segIndex, edgeIndex)

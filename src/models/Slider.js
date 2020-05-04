@@ -102,6 +102,22 @@ export default class Slider {
     }
   }
 
+  upgradePoint(segIndex, ptIndex) {
+    const segment = this.segments[segIndex]
+    const segLength = segment.getLength()
+    if (segIndex === this.segments.length - 1) {
+      if (ptIndex === 0 && segLength === 2) return
+    } else {
+      if (ptIndex === 0 || ptIndex === segLength - 1) return
+    }
+    if (segLength === 3 && segment.getType() === 'bezier') {
+      segment.setType('arc')
+    } else {
+      const newSegments = Segment.split(segment, ptIndex)
+      this.segments.splice(segIndex, 1, ...newSegments)
+    }
+  }
+
   isAnchor(segIndex, ptIndex) {
     const segment = this.segments[segIndex]
     return (
@@ -135,12 +151,8 @@ export default class Slider {
     } else {
       if (ptIndex === 0 || ptIndex === segLength - 1) return
     }
-    if (segLength === 3 && segment.getType() === 'bezier') {
-      segment.setType('arc')
-    } else {
-      const newSegments = Segment.split(segment, ptIndex)
-      this.segments.splice(segIndex, 1, ...newSegments)
-    }
+    const newSegments = Segment.split(segment, ptIndex)
+    this.segments.splice(segIndex, 1, ...newSegments)
   }
 
   resetAnchor(segIndex, ptIndex) {
