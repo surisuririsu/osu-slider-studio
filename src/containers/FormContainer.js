@@ -32,7 +32,7 @@ export default class FormContainer extends React.PureComponent {
     return (
       <div id="form_container">
         <h1>SliderStudio</h1>
-        <span>by <a onClick={this.handleProfileClick} href="https://osu.ppy.sh/u/2099102">Little</a></span>
+        <span>by <a onClick={this.handleProfileClick} href="https://osu.ppy.sh/u/2099102" target="_blank">Little</a></span>
 
         <div id="info_section" className="formSection">
           <button onClick={this.handleReadMeClick}>Read me</button>
