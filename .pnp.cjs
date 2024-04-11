@@ -814,7 +814,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["promise-inflight", "virtual:4e2088ed0df52533102f445d7e7aeba6560b7effa0cabbc7cc20dd1e36a86dd838cc541de4414688f4ce3ec77b0ad5298cea6de581350d934ceb35c3e0fe3462#npm:1.0.1"],\
             ["rimraf", "npm:3.0.2"],\
             ["ssri", "npm:9.0.1"],\
-            ["tar", "npm:6.1.15"],\
+            ["tar", "npm:6.2.1"],\
             ["unique-filename", "npm:2.0.1"]\
           ],\
           "linkType": "HARD"\
@@ -3106,7 +3106,7 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
             ["npmlog", "npm:6.0.2"],\
             ["rimraf", "npm:3.0.2"],\
             ["semver", "npm:7.5.1"],\
-            ["tar", "npm:6.1.15"],\
+            ["tar", "npm:6.2.1"],\
             ["which", "npm:2.0.2"]\
           ],\
           "linkType": "HARD"\
@@ -4093,10 +4093,10 @@ function $$SETUP_STATE(hydrateRuntimeState, basePath) {
         }]\
       ]],\
       ["tar", [\
-        ["npm:6.1.15", {\
-          "packageLocation": "./.yarn/cache/tar-npm-6.1.15-44c3e71720-f23832fcee.zip/node_modules/tar/",\
+        ["npm:6.2.1", {\
+          "packageLocation": "./.yarn/cache/tar-npm-6.2.1-237800bb20-f1322768c9.zip/node_modules/tar/",\
           "packageDependencies": [\
-            ["tar", "npm:6.1.15"],\
+            ["tar", "npm:6.2.1"],\
             ["chownr", "npm:2.0.0"],\
             ["fs-minipass", "npm:2.1.0"],\
             ["minipass", "npm:5.0.0"],\
@@ -6190,7 +6190,8 @@ class ZipFS extends BasePortableFakeFS {
           stream$1.destroy();
         },
         bytesRead: 0,
-        path: p
+        path: p,
+        pending: false
       }
     );
     const immediate = setImmediate(async () => {
@@ -6231,11 +6232,12 @@ class ZipFS extends BasePortableFakeFS {
         }
       }),
       {
-        bytesWritten: 0,
-        path: p,
         close() {
           stream$1.destroy();
-        }
+        },
+        bytesWritten: 0,
+        path: p,
+        pending: false
       }
     );
     stream$1.on(`data`, (chunk) => {
@@ -7175,18 +7177,10 @@ class ProxiedFS extends FakeFS {
     return this.baseFs.symlinkSync(mappedTarget, mappedP, type);
   }
   async readFilePromise(p, encoding) {
-    if (encoding === `utf8`) {
-      return this.baseFs.readFilePromise(this.fsMapToBase(p), encoding);
-    } else {
-      return this.baseFs.readFilePromise(this.fsMapToBase(p), encoding);
-    }
+    return this.baseFs.readFilePromise(this.fsMapToBase(p), encoding);
   }
   readFileSync(p, encoding) {
-    if (encoding === `utf8`) {
-      return this.baseFs.readFileSync(this.fsMapToBase(p), encoding);
-    } else {
-      return this.baseFs.readFileSync(this.fsMapToBase(p), encoding);
-    }
+    return this.baseFs.readFileSync(this.fsMapToBase(p), encoding);
   }
   async readdirPromise(p, opts) {
     return this.baseFs.readdirPromise(this.mapToBase(p), opts);
@@ -7912,24 +7906,14 @@ class ZipOpenFS extends BasePortableFakeFS {
   }
   async readFilePromise(p, encoding) {
     return this.makeCallPromise(p, async () => {
-      switch (encoding) {
-        case `utf8`:
-          return await this.baseFs.readFilePromise(p, encoding);
-        default:
-          return await this.baseFs.readFilePromise(p, encoding);
-      }
+      return await this.baseFs.readFilePromise(p, encoding);
     }, async (zipFs, { subPath }) => {
       return await zipFs.readFilePromise(subPath, encoding);
     });
   }
   readFileSync(p, encoding) {
     return this.makeCallSync(p, () => {
-      switch (encoding) {
-        case `utf8`:
-          return this.baseFs.readFileSync(p, encoding);
-        default:
-          return this.baseFs.readFileSync(p, encoding);
-      }
+      return this.baseFs.readFileSync(p, encoding);
     }, (zipFs, { subPath }) => {
       return zipFs.readFileSync(subPath, encoding);
     });
@@ -8621,38 +8605,28 @@ function patchFs(patchedFs, fakeFs) {
     patchedFs.realpathSync.native = patchedFs.realpathSync;
   }
   {
-    const origEmitWarning = process.emitWarning;
-    process.emitWarning = () => {
-    };
-    let patchedFsPromises;
-    try {
-      patchedFsPromises = patchedFs.promises;
-    } finally {
-      process.emitWarning = origEmitWarning;
-    }
-    if (typeof patchedFsPromises !== `undefined`) {
-      for (const fnName of ASYNC_IMPLEMENTATIONS) {
-        const origName = fnName.replace(/Promise$/, ``);
-        if (typeof patchedFsPromises[origName] === `undefined`)
-          continue;
-        const fakeImpl = fakeFs[fnName];
-        if (typeof fakeImpl === `undefined`)
-          continue;
-        if (fnName === `open`)
-          continue;
-        setupFn(patchedFsPromises, origName, (pathLike, ...args) => {
-          if (pathLike instanceof FileHandle) {
-            return pathLike[origName].apply(pathLike, args);
-          } else {
-            return fakeImpl.call(fakeFs, pathLike, ...args);
-          }
-        });
-      }
-      setupFn(patchedFsPromises, `open`, async (...args) => {
-        const fd = await fakeFs.openPromise(...args);
-        return new FileHandle(fd, fakeFs);
+    const patchedFsPromises = patchedFs.promises;
+    for (const fnName of ASYNC_IMPLEMENTATIONS) {
+      const origName = fnName.replace(/Promise$/, ``);
+      if (typeof patchedFsPromises[origName] === `undefined`)
+        continue;
+      const fakeImpl = fakeFs[fnName];
+      if (typeof fakeImpl === `undefined`)
+        continue;
+      if (fnName === `open`)
+        continue;
+      setupFn(patchedFsPromises, origName, (pathLike, ...args) => {
+        if (pathLike instanceof FileHandle) {
+          return pathLike[origName].apply(pathLike, args);
+        } else {
+          return fakeImpl.call(fakeFs, pathLike, ...args);
+        }
       });
     }
+    setupFn(patchedFsPromises, `open`, async (...args) => {
+      const fd = await fakeFs.openPromise(...args);
+      return new FileHandle(fd, fakeFs);
+    });
   }
   {
     patchedFs.read[nodeUtils.promisify.custom] = async (fd, buffer, ...args) => {
@@ -13067,7 +13041,6 @@ function reportRequiredFilesToWatchMode(files) {
 }
 
 function applyPatch(pnpapi, opts) {
-  const defaultCache = {};
   let enableNativeHooks = true;
   process.versions.pnp = String(pnpapi.VERSIONS.std);
   const moduleExports = require$$0__default.default;
@@ -13087,62 +13060,13 @@ function applyPatch(pnpapi, opts) {
   }
   const originalModuleLoad = require$$0.Module._load;
   require$$0.Module._load = function(request, parent, isMain) {
-    if (!enableNativeHooks)
-      return originalModuleLoad.call(require$$0.Module, request, parent, isMain);
-    if (isBuiltinModule(request)) {
-      try {
-        enableNativeHooks = false;
-        return originalModuleLoad.call(require$$0.Module, request, parent, isMain);
-      } finally {
-        enableNativeHooks = true;
+    if (request === `pnpapi`) {
+      const parentApiPath = opts.manager.getApiPathFromParent(parent);
+      if (parentApiPath) {
+        return opts.manager.getApiEntry(parentApiPath, true).instance;
       }
     }
-    const parentApiPath = opts.manager.getApiPathFromParent(parent);
-    const parentApi = parentApiPath !== null ? opts.manager.getApiEntry(parentApiPath, true).instance : null;
-    if (parentApi === null)
-      return originalModuleLoad(request, parent, isMain);
-    if (request === `pnpapi`)
-      return parentApi;
-    const modulePath = require$$0.Module._resolveFilename(request, parent, isMain);
-    const isOwnedByRuntime = parentApi !== null ? parentApi.findPackageLocator(modulePath) !== null : false;
-    const moduleApiPath = isOwnedByRuntime ? parentApiPath : opts.manager.findApiPathFor(npath.dirname(modulePath));
-    const entry = moduleApiPath !== null ? opts.manager.getApiEntry(moduleApiPath) : { instance: null, cache: defaultCache };
-    const cacheEntry = entry.cache[modulePath];
-    if (cacheEntry) {
-      if (cacheEntry.loaded === false && cacheEntry.isLoading !== true) {
-        try {
-          cacheEntry.isLoading = true;
-          if (isMain) {
-            process.mainModule = cacheEntry;
-            cacheEntry.id = `.`;
-          }
-          cacheEntry.load(modulePath);
-        } finally {
-          cacheEntry.isLoading = false;
-        }
-      }
-      return cacheEntry.exports;
-    }
-    const module = new require$$0.Module(modulePath, parent != null ? parent : void 0);
-    module.pnpApiPath = moduleApiPath;
-    reportRequiredFilesToWatchMode([modulePath]);
-    entry.cache[modulePath] = module;
-    if (isMain) {
-      process.mainModule = module;
-      module.id = `.`;
-    }
-    let hasThrown = true;
-    try {
-      module.isLoading = true;
-      module.load(modulePath);
-      hasThrown = false;
-    } finally {
-      module.isLoading = false;
-      if (hasThrown) {
-        delete require$$0.Module._cache[modulePath];
-      }
-    }
-    return module.exports;
+    return originalModuleLoad.call(require$$0.Module, request, parent, isMain);
   };
   function getIssuerSpecsFromPaths(paths) {
     return paths.map((path) => ({
@@ -13210,7 +13134,7 @@ function applyPatch(pnpapi, opts) {
       const parentDirectory = (parent == null ? void 0 : parent.filename) != null ? npath.dirname(parent.filename) : null;
       const absoluteRequest = npath.isAbsolute(request) ? request : parentDirectory !== null ? npath.resolve(parentDirectory, request) : null;
       if (absoluteRequest !== null) {
-        const apiPath = parentDirectory === npath.dirname(absoluteRequest) && (parent == null ? void 0 : parent.pnpApiPath) ? parent.pnpApiPath : opts.manager.findApiPathFor(absoluteRequest);
+        const apiPath = parent && parentDirectory === npath.dirname(absoluteRequest) ? opts.manager.getApiPathFromParent(parent) : opts.manager.findApiPathFor(absoluteRequest);
         if (apiPath !== null) {
           issuerSpecs.unshift({
             apiPath,
@@ -14931,7 +14855,6 @@ function makeManager(pnpapi, opts) {
   const initialApiStats = opts.fakeFs.statSync(npath.toPortablePath(initialApiPath));
   const apiMetadata = /* @__PURE__ */ new Map([
     [initialApiPath, {
-      cache: require$$0.Module._cache,
       instance: pnpapi,
       stats: initialApiStats,
       lastRefreshCheck: Date.now()
@@ -14950,7 +14873,7 @@ function makeManager(pnpapi, opts) {
     apiEntry.lastRefreshCheck = timeNow;
     const stats = opts.fakeFs.statSync(pnpApiPath);
     if (stats.mtime > apiEntry.stats.mtime) {
-      process.emitWarning(`[Warning] The runtime detected new informations in a PnP file; reloading the API instance (${npath.fromPortablePath(pnpApiPath)})`);
+      process.emitWarning(`[Warning] The runtime detected new information in a PnP file; reloading the API instance (${npath.fromPortablePath(pnpApiPath)})`);
       apiEntry.stats = stats;
       apiEntry.instance = loadApiInstance(pnpApiPath);
     }
@@ -14963,7 +14886,6 @@ function makeManager(pnpapi, opts) {
       }
     } else {
       apiMetadata.set(pnpApiPath, apiEntry = {
-        cache: {},
         instance: loadApiInstance(pnpApiPath),
         stats: opts.fakeFs.statSync(pnpApiPath),
         lastRefreshCheck: Date.now()
@@ -15033,19 +14955,16 @@ ${controlSegment}
     } while (curr !== PortablePath.root);
     return addToCacheAndReturn(start, curr, null);
   }
+  const moduleToApiPathCache = /* @__PURE__ */ new WeakMap();
   function getApiPathFromParent(parent) {
     if (parent == null)
       return initialApiPath;
-    if (typeof parent.pnpApiPath === `undefined`) {
-      if (parent.filename !== null) {
-        return parent.pnpApiPath = findApiPathFor(parent.filename);
-      } else {
-        return initialApiPath;
-      }
-    }
-    if (parent.pnpApiPath !== null)
-      return parent.pnpApiPath;
-    return null;
+    let apiPath = moduleToApiPathCache.get(parent);
+    if (typeof apiPath !== `undefined`)
+      return apiPath;
+    apiPath = parent.filename ? findApiPathFor(parent.filename) : null;
+    moduleToApiPathCache.set(parent, apiPath);
+    return apiPath;
   }
   return {
     getApiPathFromParent,
