@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 $primary: #ff88cc;
 $secondary: #ccccff;
 $white: #f9f9f9;
@@ -32,11 +34,11 @@ button {
   background-color: $primary;
 
   &:hover {
-    background-color: lighten($primary, 5%);
+    background-color: color.adjust($primary, $lightness: 5%);
   }
 
   &.disabled {
-    background-color: desaturate($primary, 70%);
+    background-color: color.adjust($primary, $saturation: -70%);
   }
 }
 
