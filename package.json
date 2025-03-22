@@ -9,14 +9,14 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "15.2.2",
+    "next": "15.2.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
-    "sass": "^1.85.1"
+    "sass": "^1.86.0"
   },
   "devDependencies": {
-    "eslint": "^9.22.0",
-    "eslint-config-next": "^15.2.2"
+    "eslint": "^9.23.0",
+    "eslint-config-next": "^15.2.3"
   },
   "packageManager": "yarn@4.7.0"
 }
